@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "docspring": {
+      "type": "http",
+      "url": "https://mcp.docspring.com/mcp"
+    },
+    "docspring-eu": {
+      "type": "http",
+      "url": "https://mcp-eu.docspring.com/mcp"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "docspring",
+  "owner": {
+    "name": "DocSpring"
+  },
+  "plugins": [
+    {
+      "name": "docspring",
+      "source": "./",
+      "description": "Fill PDF templates, generate PDFs from HTML templates and collect e-signatures with DocSpring's skills and MCP server."
+    }
+  ]
+}

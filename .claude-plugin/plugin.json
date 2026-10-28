@@ -1,0 +1,26 @@
+{
+  "name": "docspring",
+  "version": "1.0.0",
+  "description": "Fill PDF templates, generate PDFs from HTML templates and collect e-signatures with DocSpring's skills and MCP server.",
+  "author": {
+    "name": "DocSpring",
+    "email": "support@docspring.com",
+    "url": "https://docspring.com"
+  },
+  "homepage": "https://docspring.com/docs/mcp/",
+  "repository": "https://github.com/DocSpring/skills",
+  "license": "MIT",
+  "keywords": [
+    "docspring",
+    "pdf",
+    "pdf-generation",
+    "pdf-forms",
+    "html-to-pdf",
+    "e-signature",
+    "templates",
+    "mcp"
+  ],
+  "mcpServers": "./.mcp.json",
+  "icon": "./icon.png",
+  "privacyPolicyUrl": "https://docspring.com/privacy"
+}

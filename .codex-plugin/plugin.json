@@ -1,0 +1,48 @@
+{
+  "name": "docspring",
+  "version": "1.0.0",
+  "description": "Fill PDF templates, generate PDFs from HTML templates and collect e-signatures with DocSpring's skills and MCP server.",
+  "author": {
+    "name": "DocSpring",
+    "email": "support@docspring.com",
+    "url": "https://docspring.com"
+  },
+  "homepage": "https://docspring.com/docs/mcp/",
+  "repository": "https://github.com/DocSpring/skills",
+  "license": "MIT",
+  "keywords": [
+    "docspring",
+    "pdf",
+    "pdf-generation",
+    "pdf-forms",
+    "html-to-pdf",
+    "e-signature",
+    "templates",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "DocSpring",
+    "shortDescription": "PDF templates, PDF generation and e-signatures",
+    "longDescription": "Set up PDF and HTML templates, generate PDFs from your data, and send documents for signature with DocSpring. The skills cover turning a PDF into a fillable template with AI field detection, designing HTML/CSS templates and checking the rendered pages, writing app code with DocSpring's API clients and typed models, signature requests, and embedded forms. The DocSpring MCP server connects to your account after you sign in, with the access you choose.",
+    "developerName": "DocSpring",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://docspring.com",
+    "privacyPolicyURL": "https://docspring.com/privacy",
+    "termsOfServiceURL": "https://docspring.com/tos",
+    "defaultPrompt": [
+      "Turn this PDF form into a DocSpring template and set up its fields",
+      "Restyle my DocSpring invoice template and show me a test PDF",
+      "Write the code that fills our onboarding template from a customer record"
+    ],
+    "brandColor": "#3C8EE0",
+    "composerIcon": "./logo.svg",
+    "logo": "./logo.svg",
+    "screenshots": []
+  }
+}
