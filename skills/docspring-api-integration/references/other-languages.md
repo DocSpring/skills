@@ -1,11 +1,11 @@
-# PHP, Go, Java, C# and Elixir
+# PHP, Go, Java, C#, Elixir and Rust
 
 The flow is the same as in `SKILL.md` and `references/typescript.md`: a generated model per template, a background job
 that saves the submission ID, looks for the submission before it creates one again after a failure with no ID
 (`findSubmission` there), and checks `state`, a webhook handler that verifies signatures, a schema test and a
 `validateSubmission` contract test. `testMode` below is the app's own setting, such as `DOCSPRING_TEST_MODE`
 (DocSpring doesn't read it). This file has what differs in each client. Each SDK's repository
-(`https://github.com/DocSpring/docspring-<language>`: `php`, `go`, `java`, `csharp`, `elixir`) has an `AGENTS.md`
+(`https://github.com/DocSpring/docspring-<language>`: `php`, `go`, `java`, `csharp`, `elixir`, `rust`) has an `AGENTS.md`
 and `docs/` listing every method.
 
 - [PHP](#php)
@@ -13,6 +13,7 @@ and `docs/` listing every method.
 - [Java](#java)
 - [C#](#c)
 - [Elixir](#elixir)
+- [Rust](#rust)
 - [Webhook signatures](#webhook-signatures)
 
 ## PHP
@@ -191,6 +192,73 @@ end
 - Model code: `lang` `elixir` gives `DocSpring.Templates.<Name>.Template` with `to_map/1`, `from_map/1`,
   `to_json/1` and `from_json/1`.
 
+## Rust
+
+```toml
+[dependencies]
+docspring = "4.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+```
+
+```rust
+mod invoice; // the generated model code, saved as src/invoice.rs
+
+use docspring::{Api, CreateSubmissionError, Error};
+
+// docspring::Client::from_env() reads DOCSPRING_TOKEN_ID, DOCSPRING_TOKEN_SECRET and DOCSPRING_REGION
+async fn generate_invoice(
+    client: &docspring::Client,
+    template_id: &str,
+    invoice: &invoice::Invoice,
+    test_mode: bool,
+) -> Result<docspring::models::Submission, Box<dyn std::error::Error>> {
+    let body = docspring::models::CreateSubmissionRequest {
+        // The generated structs leave out empty optional fields, so those fields print their defaults
+        data: Some(serde_json::from_value(serde_json::to_value(invoice)?)?),
+        test: Some(test_mode),
+        ..Default::default()
+    };
+    let params = docspring::CreateSubmissionParams::builder()
+        .template_id(template_id)
+        .body(body)
+        .version("1")
+        .build();
+
+    match client.create_submission(params).await {
+        Ok(submission) => {
+            if submission.state != docspring::models::SubmissionState::Processed { /* see SKILL.md, rule 5 */ }
+            if let Some(url) = submission.files.pdf.as_ref().and_then(|pdf| pdf.download_url.as_deref()) {
+                println!("{url}");
+            }
+            Ok(submission)
+        }
+        // An error status: `entity` is the error type's variant for it, and `headers` has Retry-After
+        Err(Error::ResponseError(response)) => match response.entity {
+            Some(CreateSubmissionError::Status504(error)) => {
+                // The submission was saved: get it by error.error.submission_id
+                Err(format!("timed out: {:?}", error.error.submission_id).into())
+            }
+            _ => Err(format!("DocSpring returned {}: {}", response.status, response.content).into()),
+        },
+        // The client's own check: the API would have rejected the request, so it wasn't sent
+        Err(Error::RequestValidation(error)) => Err(error.into()),
+        Err(error) => Err(error.into()), // a network error
+    }
+}
+```
+
+- Every method is on the `docspring::Api` trait (`use docspring::Api`), and takes one parameters struct from its
+  builder. With the `mockall` feature, `docspring::MockApi` stands in for the client in tests.
+- Request models are structs: set the fields you need and finish with `..Default::default()`. An optional field is an
+  `Option`, and a nullable one inside it another `Option`.
+- Response enums are open: a value this release doesn't know is `Unknown(String)`, and `is_known()` says which.
+- Region in code: `docspring::Client::builder().region("EU").build()?` (with `.token_id(...)` and
+  `.token_secret(...)`, or the environment variables).
+- Model code: `lang` `rust` gives a module with a struct named after the template (`Invoice`), deriving serde's
+  `Serialize` and `Deserialize`. Its first comment names the file to save it as.
+
 ## Webhook signatures
 
 Each client checks the `X-DocSpring-Signature` header for you: pass it the raw body exactly as received, the header
@@ -219,4 +287,9 @@ var ok = DocSpring.Webhooks.VerifyWebhookSignature(
 ```elixir
 # In Phoenix, keep the raw body with a custom body_reader for Plug.Parsers: it's gone once parsed.
 ok = Docspring.Webhooks.verify_webhook_signature(raw_body, signature_header, secret)
+```
+
+```rust
+// In axum, take the body as Bytes (not Json) to keep it as it was sent
+let ok = docspring::verify_webhook_signature(&raw_body, signature_header, &secret);
 ```

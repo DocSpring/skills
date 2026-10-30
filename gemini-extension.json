@@ -1,6 +1,6 @@
 {
   "name": "docspring",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Fill PDF templates, generate PDFs from HTML templates and collect e-signatures with DocSpring's skills and MCP server.",
   "mcpServers": {
     "docspring": {

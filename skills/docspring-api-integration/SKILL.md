@@ -3,7 +3,7 @@ name: docspring-api-integration
 description: Writes application code that generates PDFs with DocSpring through its official 4.x API clients (API v2), covering client setup, typed models for a template's data, the sync API, downloads, batches, combined PDFs, webhook signatures, error handling and tests that catch template changes. Use when the user wants their app to fill a template or generate PDFs with DocSpring ("generate an invoice PDF with DocSpring when an order is paid"), or when a project uses it, such as a docspring, docspring-ts or DocSpring.Client package, DOCSPRING_TOKEN_ID, tpl_ template IDs, sync.api.docspring.com, createSubmission, or 3.x code calling generatePdf. Not for one PDF made from a chat (docspring), building templates (docspring-pdf-templates, docspring-html-templates), signing flows (docspring-signature-requests), or local PDF libraries such as ReportLab or pdf-lib.
 license: MIT
 metadata:
-  version: '1.0.0'
+  version: '1.1.0'
   author: DocSpring
 ---
 
@@ -15,7 +15,7 @@ while you work; the app never uses it.
 
 Before you write code, read the reference for the project's language: `references/typescript.md` (TypeScript and
 JavaScript), `references/python.md`, `references/ruby.md` or `references/other-languages.md` (PHP, Go, Java, C#,
-Elixir). Each has the full job, error helper, webhook handler, code generation script and tests.
+Elixir, Rust). Each has the full job, error helper, webhook handler, code generation script and tests.
 
 ## Rules
 
@@ -40,16 +40,17 @@ Elixir). Each has the full job, error helper, webhook handler, code generation s
    `error_message`. New states can be added: treat one you don't know as not ready.
 6. **Never create twice: send an `Idempotency-Key` with each create, and save the ID at once.** Use a key that's the
    same every time the job sends that create, such as `invoice-<order ID>` (the create method's `idempotencyKey`
-   argument: `idempotency_key` in Python, Ruby and PHP, `.IdempotencyKey(key)` in Go, and the `:"Idempotency-Key"`
-   option in Elixir). For 24 hours, the same request with the same key from the same API token gets the first response
-   back instead of making another submission, so a create that failed without an ID (a network error, a 5xx, a 504
-   without one) can be sent again with the same key. A 409 `idempotency_key_in_use` means the first request is still
-   running: send it again after `Retry-After` seconds. A 422 `idempotency_key_reused` means the key went with different
-   data: give each different create its own key. Store the ID on your record as soon as you have it, including from a
-   402 `insufficient_credits` or 504 `polling_timeout` error, which carry the ID of a record that exists, so a retried
-   job gets that submission. A retry more than 24 hours after the first attempt gets a new submission even with the same
-   key: record when you send each create, and before such a retry, look for it by your `metadata` ID (`listSubmissions`
-   with `template_id` and `created_after`). Each reference has the code.
+   argument: `idempotency_key` in Python, Ruby and PHP, `.IdempotencyKey(key)` in Go, `.idempotency_key(key)` on the
+   params builder in Rust, and the `:"Idempotency-Key"` option in Elixir). For 24 hours, the same request with the same
+   key from the same API token gets the first response back instead of making another submission, so a create that
+   failed without an ID (a network error, a 5xx, a 504 without one) can be sent again with the same key. A 409
+   `idempotency_key_in_use` means the first request is still running: send it again after `Retry-After` seconds. A 422
+   `idempotency_key_reused` means the key went with different data: give each different create its own key. Store the ID
+   on your record as soon as you have it, including from a 402 `insufficient_credits` or 504 `polling_timeout` error,
+   which carry the ID of a record that exists, so a retried job gets that submission. A retry more than 24 hours after
+   the first attempt gets a new submission even with the same key: record when you send each create, and before such a
+   retry, look for it by your `metadata` ID (`listSubmissions` with `template_id` and `created_after`). Each reference
+   has the code.
 7. **Store the submission ID, not the download link.** `files.pdf.download_url` is temporary.
 8. **Generate PDFs in a background job**, not in the web request that triggered them: a sync request can wait up to
    95 seconds.
@@ -128,8 +129,8 @@ Do this before you write the code that builds `data`.
 3. **Fetch the JSON Schema and the model code for that version**: `getTemplateSchema(templateId, version)` and
    `getTemplateModelCode(templateId, lang, version)` (MCP: `get_template_schema`, `get_model_code`; REST:
    `GET /templates/{template_id}/schema` and `GET /templates/{template_id}/model_code?lang=...`). DocSpring makes
-   the code with quicktype, in `typescript`, `javascript`, `ruby`, `python`, `php`, `java`, `csharp`, `elixir` or
-   `go`, and returns `lang`, `root_type_name` and `code`. `get_model_code` returns only the types. REST and the
+   the code with quicktype, in `typescript`, `javascript`, `ruby`, `python`, `php`, `java`, `csharp`, `elixir`, `go`
+   or `rust`, and returns `lang`, `root_type_name` and `code`. `get_model_code` returns only the types. REST and the
    clients return them with quicktype's code that converts JSON to and from them; REST's `just_types=true` leaves it
    out.
 4. **Save both as generated files**, such as `src/docspring/generated/invoice.ts` and `invoice.schema.json` beside
@@ -139,7 +140,7 @@ Do this before you write the code that builds `data`.
 
 About the generated code:
 
-- The root type is the template's name in PascalCase in TypeScript, JavaScript, Python and PHP (`Invoice`);
+- The root type is the template's name in PascalCase in TypeScript, JavaScript, Python, PHP and Rust (`Invoice`);
   `DocSpring::Templates::<Name>::Template` in Ruby; `DocSpring.Templates.<Name>.Template` in C# and Elixir;
   `Template` in the package `<name>` in Go and Java. Renaming the template renames it, so alias `root_type_name` to
   a name you control.
@@ -260,7 +261,7 @@ backoff (each poll counts toward the rate limit) until `state` isn't `pending`.
 - **Verify `X-DocSpring-Signature`** (`t=<unix time>,v1=<hex>`) before trusting anything: `v1` is the HMAC-SHA256 of
   `"{t}.{raw body}"` with the secret. Hash the raw body bytes before any JSON parser touches them, accept any `v1`
   that matches, compare in constant time, and reject a `t` over 5 minutes old. The clients do all of this:
-  `verifyWebhookSignature(rawBody, header, secret)` (`verify_webhook_signature` in Ruby, Python and Elixir,
+  `verifyWebhookSignature(rawBody, header, secret)` (`verify_webhook_signature` in Ruby, Python, Elixir and Rust,
   `VerifyWebhookSignature` in Go and C#). Each reference shows the handler.
 - **Respond 2xx within 30 seconds and do the work in a job.** DocSpring doesn't follow redirects and retries failures
   for about three days, so an event can arrive twice: deduplicate on the body's `id`.

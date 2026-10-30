@@ -29,7 +29,7 @@ environment; `docspring-api-integration` covers setting them up.
 | `createSignatureRequestToken` | `POST /signature_requests/{signature_request_id}/tokens` | Makes a signing link.                              |
 | `createSignatureRequestEvent` | `POST /signature_requests/{signature_request_id}/events` | Records that you sent the link.                    |
 
-Ruby, Python and Elixir name the methods in snake case (createSubmission becomes create_submission); JavaScript,
+Ruby, Python, Elixir and Rust name the methods in snake case (createSubmission becomes create_submission); JavaScript,
 TypeScript, PHP and Java use the names above, and C# and Go capitalize them. In Ruby, Python, JavaScript and
 TypeScript the request body is a plain hash or object with the API's snake case property names.
 
