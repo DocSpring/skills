@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "docspring",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Fill PDF and Word templates, generate PDFs from HTML templates and collect e-signatures with DocSpring's skills and MCP server.",
   "author": {
     "name": "DocSpring",

@@ -3,7 +3,7 @@ name: docspring
 description: Connects to DocSpring, the service that fills PDF and Word templates with data, generates PDFs from HTML templates and collects e-signatures, through its MCP server or REST API v2, and routes work to the other docspring-* skills. Covers access levels, API tokens, US and EU accounts, templates and their draft and published versions, submissions, test vs live PDFs and credits, IDs, sync waits, errors and rate limits. Use when the user mentions DocSpring or asks to list or fill their templates, make a PDF or Word document from a template, check a submission, review their account or find out why submissions failed, or connect DocSpring, or when a project has a docspring package, tpl_ IDs, DOCSPRING_TOKEN_ID or sync.api.docspring.com. Not for reading, merging or editing local PDF files without DocSpring (use a general PDF skill).
 license: MIT
 metadata:
-  version: '1.1.1'
+  version: '1.2.0'
   author: DocSpring
 ---
 
@@ -118,8 +118,9 @@ is the US.
 ## What's in an account
 
 - **Template** (`tpl_...`): a PDF with fields placed on it (`template_type` `pdf`), HTML and SCSS that DocSpring
-  renders as a PDF (`html`), or a Word document with tags that DocSpring fills in to make Word documents or PDFs
-  (`docx`). The type can't change.
+  renders as a PDF (`html`), a Word document with tags that DocSpring fills in to make Word documents or PDFs
+  (`docx`), or a page design, a layout of sections, text, images and tables that DocSpring lays out as a PDF
+  (`page_designer`). The type can't change.
 - **Field** (an integer ID within its template): one value the template takes, with a name, type, page and position.
   Submission data is keyed by field name.
 - **Version** (`1.2.0`): a published, read-only copy of the template. Edits change the draft. `version` takes `1.2.0`,
@@ -154,7 +155,7 @@ template makes its submissions public).
   `web` is DocSpring's own forms (a hosted form link, an embedded web or visual form) or someone signed in to
   DocSpring, so its data came from a DocSpring form, not the user's code: check the template's fields and form
   settings before you blame their integration. `reprocess` is a copy made to generate a PDF again.
-- **Templates:** each one in `list_templates` says whether it's `ready`. An HTML template always is, and a Word
+- **Templates:** each one in `list_templates` says whether it's `ready`. An HTML template or a page design always is, and a Word
   template is once its Word document is stored (while a `document_url` downloads, `document.state` is `downloading`). A PDF template is
   `ready` once its PDF is stored and every page is done: its image is made and its fields are set up (no
   `document.page_processing_statuses` entry has `fields` `pending` or `naming`). It doesn't wait for
@@ -266,6 +267,9 @@ Load the skill for the task. If it isn't installed, read its docs page instead.
   PDF into an HTML template. Docs: https://docspring.com/docs/html-templates/overview/
 - **`docspring-word-templates`**: turn a Word document into a template, add or fix its tags, check how it fills in,
   and get Word documents, PDFs or both. Docs: https://docspring.com/docs/word-templates/overview/
+- **`docspring-page-designer`**: design a PDF from the user's data as a page design (a JSON layout of sections, text
+  with fields, tables and images), change one's layout, and check how it prints. Docs:
+  https://docspring.com/docs/page-designer/overview/
 - **`docspring-api-integration`**: write app code that generates PDFs with an API client, types for a template's data,
   webhook handlers and error handling. Docs: https://docspring.com/docs/api-guide/install-api-client/
 - **`docspring-signature-requests`**: collect e-signatures from one or more signers, signing links, embedded signing.

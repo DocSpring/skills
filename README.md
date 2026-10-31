@@ -11,6 +11,7 @@ sign in.
 | `docspring-pdf-templates`      | Turns a PDF form into a template: AI field detection, checking fields against the pages, versions  |
 | `docspring-html-templates`     | Designs and fixes HTML/CSS templates, rendering a test PDF after each change to check the pages    |
 | `docspring-word-templates`     | Turns Word documents into templates: tags, loops over table rows, pictures, Word or PDF output     |
+| `docspring-page-designer`      | Designs page designs from a JSON layout: sections, text with fields, tables, images, previews      |
 | `docspring-api-integration`    | Writes app code with DocSpring's API clients: typed models, generating PDFs, webhooks, errors      |
 | `docspring-signature-requests` | Sends templates for signature, makes signing links and embeds signing in your app                  |
 | `docspring-embedded-forms`     | Embeds DocSpring forms and the template editor in your web app                                     |
