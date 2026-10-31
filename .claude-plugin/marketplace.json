@@ -1,6 +1,6 @@
 {
   "name": "docspring",
-  "description": "Fill PDF templates, generate PDFs from HTML templates and collect e-signatures with DocSpring's skills and MCP server.",
+  "description": "Fill PDF and Word templates, generate PDFs from HTML templates and collect e-signatures with DocSpring's skills and MCP server.",
   "owner": {
     "name": "DocSpring",
     "email": "support@docspring.com",
@@ -9,8 +9,8 @@
   "plugins": [
     {
       "name": "docspring",
-      "version": "1.1.0",
-      "description": "Fill PDF templates, generate PDFs from HTML templates and collect e-signatures with DocSpring's skills and MCP server.",
+      "version": "1.1.1",
+      "description": "Fill PDF and Word templates, generate PDFs from HTML templates and collect e-signatures with DocSpring's skills and MCP server.",
       "author": {
         "name": "DocSpring",
         "email": "support@docspring.com",
@@ -25,6 +25,7 @@
         "pdf-generation",
         "pdf-forms",
         "html-to-pdf",
+        "docx",
         "e-signature",
         "templates",
         "mcp"

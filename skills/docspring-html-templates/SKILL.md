@@ -3,7 +3,7 @@ name: docspring-html-templates
 description: Creates, restyles and fixes DocSpring HTML/CSS templates (Liquid HTML, SCSS, headers, footers, page size and margins), previewing the draft after each change and checking its pages visually. Also rebuilds a DocSpring PDF template as an HTML template that takes the same data. Use when the user wants to design or edit a DocSpring HTML template, fix its layout, page breaks, fonts, images, headers, footers or page numbers, debug a Liquid or SCSS error on a submission, or move from a PDF template to HTML/CSS, or when a project has template_type "html", tpl_ IDs, a docspring package or sync.api.docspring.com. Not for fields on PDF templates (docspring-pdf-templates), app code that calls the API (docspring-api-integration), Shopify Liquid, or HTML-to-PDF with Puppeteer or other local tools.
 license: MIT
 metadata:
-  version: '1.1.0'
+  version: '1.1.1'
   author: DocSpring
 ---
 
@@ -95,6 +95,9 @@ print. Fields also:
 - feed the template editor's preview, which renders random values for the fields in Liquid's strict mode. In the
   editor, a variable that isn't a field shows an "undefined variable" error, though submissions print it as blank.
 
+When the user saves code in DocSpring's template editor, it adds a required field for each new value the code's tags
+use. `update_template` doesn't: add the fields yourself.
+
 `add_fields` works on HTML templates. Each field needs a `name` and a `type` (default `string`), plus settings such as
 `required`, `title`, `description`, `default`, `option_list` and `include_time`. Leave out `page`, `x`, `y`, `width`
 and `height`: an HTML template's fields are all on page 1, and their placement and style settings aren't used.
@@ -119,6 +122,11 @@ These are what agents most often get wrong.
   properties, grid, `min()`, `clamp()`) passes through. `@use` and `@forward` do nothing (they're copied into the CSS
   as they are), module functions such as `math.div()` are syntax errors (divide with `/`), and there are no files to
   `@import`.
+- **Liquid works in the SCSS.** It renders with the submission's data before the SCSS compiles, so a value can set a
+  variable or a property (`$brand: {{ brand_color }};`) and `{% if %}` can wrap rules. What a tag prints is escaped
+  for CSS: a value with quotes, semicolons or braces stays inside the string or property it's in. The template
+  editor's preview fills fields with random text, so give a field that an SCSS function uses (`darken($brand, 10%)`)
+  a `default`, or the editor's preview fails with "... is not a color for `darken'".
 - **`@import url(...)` in the SCSS does nothing.** It lands after DocSpring's CSS, and Chrome ignores an `@import`
   that isn't first. Load a web font with `<link href="https://fonts.googleapis.com/css2?family=..." rel="stylesheet">`
   in the `html`.

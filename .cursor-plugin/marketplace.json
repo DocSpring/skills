@@ -7,7 +7,7 @@
     {
       "name": "docspring",
       "source": "./",
-      "description": "Fill PDF templates, generate PDFs from HTML templates and collect e-signatures with DocSpring's skills and MCP server."
+      "description": "Fill PDF and Word templates, generate PDFs from HTML templates and collect e-signatures with DocSpring's skills and MCP server."
     }
   ]
 }

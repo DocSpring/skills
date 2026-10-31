@@ -1,15 +1,16 @@
 # DocSpring skills for AI agents
 
-[Agent Skills](https://agentskills.io) and an agent plugin for [DocSpring](https://docspring.com), which fills PDF
-templates, generates PDFs from HTML templates and collects e-signatures. The skills teach an AI agent how to work with
-DocSpring, and the plugin connects the agent to the DocSpring MCP server, which works with your account after you sign
-in.
+[Agent Skills](https://agentskills.io) and an agent plugin for [DocSpring](https://docspring.com), which fills PDF and
+Word templates, generates PDFs from HTML templates and collects e-signatures. The skills teach an AI agent how to work
+with DocSpring, and the plugin connects the agent to the DocSpring MCP server, which works with your account after you
+sign in.
 
 | Skill                          | What it does                                                                                       |
 | ------------------------------ | -------------------------------------------------------------------------------------------------- |
 | `docspring`                    | Connects to DocSpring and finds your templates, fills them, makes test PDFs and routes to the rest |
 | `docspring-pdf-templates`      | Turns a PDF form into a template: AI field detection, checking fields against the pages, versions  |
 | `docspring-html-templates`     | Designs and fixes HTML/CSS templates, rendering a test PDF after each change to check the pages    |
+| `docspring-word-templates`     | Turns Word documents into templates: tags, loops over table rows, pictures, Word or PDF output     |
 | `docspring-api-integration`    | Writes app code with DocSpring's API clients: typed models, generating PDFs, webhooks, errors      |
 | `docspring-signature-requests` | Sends templates for signature, makes signing links and embeds signing in your app                  |
 | `docspring-embedded-forms`     | Embeds DocSpring forms and the template editor in your web app                                     |

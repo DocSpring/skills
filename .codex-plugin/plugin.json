@@ -1,7 +1,7 @@
 {
   "name": "docspring",
-  "version": "1.1.0",
-  "description": "Fill PDF templates, generate PDFs from HTML templates and collect e-signatures with DocSpring's skills and MCP server.",
+  "version": "1.1.1",
+  "description": "Fill PDF and Word templates, generate PDFs from HTML templates and collect e-signatures with DocSpring's skills and MCP server.",
   "author": {
     "name": "DocSpring",
     "email": "support@docspring.com",
@@ -16,6 +16,7 @@
     "pdf-generation",
     "pdf-forms",
     "html-to-pdf",
+    "docx",
     "e-signature",
     "templates",
     "mcp"
@@ -25,7 +26,7 @@
   "interface": {
     "displayName": "DocSpring",
     "shortDescription": "PDF templates, PDF generation and e-signatures",
-    "longDescription": "Set up PDF and HTML templates, generate PDFs from your data, and send documents for signature with DocSpring. The skills cover turning a PDF into a fillable template with AI field detection, designing HTML/CSS templates and checking the rendered pages, writing app code with DocSpring's API clients and typed models, signature requests, and embedded forms. The DocSpring MCP server connects to your account after you sign in, with the access you choose.",
+    "longDescription": "Set up PDF, HTML and Word templates, generate PDFs and Word documents from your data, and send documents for signature with DocSpring. The skills cover turning a PDF into a fillable template with AI field detection, designing HTML/CSS templates and checking the rendered pages, turning Word documents into templates, writing app code with DocSpring's API clients and typed models, signature requests, and embedded forms. The DocSpring MCP server connects to your account after you sign in, with the access you choose.",
     "developerName": "DocSpring",
     "category": "Productivity",
     "capabilities": [

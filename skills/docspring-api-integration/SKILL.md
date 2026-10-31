@@ -1,9 +1,9 @@
 ---
 name: docspring-api-integration
-description: Writes application code that generates PDFs with DocSpring through its official 4.x API clients (API v2), covering client setup, typed models for a template's data, the sync API, downloads, batches, combined PDFs, webhook signatures, error handling and tests that catch template changes. Use when the user wants their app to fill a template or generate PDFs with DocSpring ("generate an invoice PDF with DocSpring when an order is paid"), or when a project uses it, such as a docspring, docspring-ts or DocSpring.Client package, DOCSPRING_TOKEN_ID, tpl_ template IDs, sync.api.docspring.com, createSubmission, or 3.x code calling generatePdf. Not for one PDF made from a chat (docspring), building templates (docspring-pdf-templates, docspring-html-templates), signing flows (docspring-signature-requests), or local PDF libraries such as ReportLab or pdf-lib.
+description: Writes application code that generates PDFs with DocSpring through its official 4.x API clients (API v2), covering client setup, typed models for a template's data, the sync API, downloads, batches, combined PDFs, webhook signatures, error handling and tests that catch template changes. Use when the user wants their app to fill a template or generate PDFs with DocSpring ("generate an invoice PDF with DocSpring when an order is paid"), or when a project uses it, such as a docspring, docspring-ts or DocSpring.Client package, DOCSPRING_TOKEN_ID, tpl_ template IDs, sync.api.docspring.com, createSubmission, or 3.x code calling generatePdf. Not for one PDF made from a chat (docspring), building templates (docspring-pdf-templates, docspring-html-templates, docspring-word-templates), signing flows (docspring-signature-requests), or local PDF libraries such as ReportLab or pdf-lib.
 license: MIT
 metadata:
-  version: '1.1.0'
+  version: '1.1.1'
   author: DocSpring
 ---
 
@@ -36,7 +36,7 @@ Elixir, Rust). Each has the full job, error helper, webhook handler, code genera
    credits. Use a test API token in development and CI: it can't make live submissions (combining PDFs still uses
    credits).
 5. **Check the submission's `state`.** A sync create returns 201 even when the PDF failed. Only `processed` has
-   `files.pdf`; `error`, `syntax_error`, `image_download_failed` and `image_processing_failed` have an
+   its files (`files.pdf`, and `files.docx` and `files.odt` for a Word document and an OpenDocument file); `error`, `syntax_error`, `image_download_failed` and `image_processing_failed` have an
    `error_message`. New states can be added: treat one you don't know as not ready.
 6. **Never create twice: send an `Idempotency-Key` with each create, and save the ID at once.** Use a key that's the
    same every time the job sends that create, such as `invoice-<order ID>` (the create method's `idempotencyKey`
@@ -162,14 +162,14 @@ About the generated code:
 `createSubmission(templateId, body, version, wait)` waits for the PDF and returns the submission. Python and Ruby
 use the same names in snake_case, with `version` and `wait` as keyword arguments. The body:
 
-| Property         | Use                                                                                                                                                                    |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data`           | The template's field values, built with the generated type.                                                                                                            |
-| `test`           | From config, on every request (rule 4).                                                                                                                                |
-| `metadata`       | Your own IDs (`order_id`), returned in webhooks and never printed. `pdf_filename` names the file (`.pdf` is added), `pdf_title` sets the PDF's title.                  |
-| `expires_in`     | Seconds after the PDF is made until DocSpring deletes it and the data (default: the template's setting). Copy the PDF to your own storage first if you need it longer. |
-| `editable`       | `true` keeps text and check fields fillable, `false` flattens them. Left out: the template decides.                                                                    |
-| `output_formats` | `["pdf", "png"]` adds an image of each page, in `files.png.pages`.                                                                                                     |
+| Property         | Use                                                                                                                                                                                                                              |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data`           | The template's field values, built with the generated type.                                                                                                                                                                      |
+| `test`           | From config, on every request (rule 4).                                                                                                                                                                                          |
+| `metadata`       | Your own IDs (`order_id`), returned in webhooks and never printed. `pdf_filename` names the file (`.pdf` is added), `pdf_title` sets the PDF's title.                                                                            |
+| `expires_in`     | Seconds after the PDF is made until DocSpring deletes it and the data (default: the template's setting). Copy the PDF to your own storage first if you need it longer.                                                           |
+| `editable`       | `true` keeps text and check fields fillable, `false` flattens them. Left out: the template decides.                                                                                                                              |
+| `output_formats` | `["pdf", "png"]` adds an image of each page, in `files.png.pages`. A Word template also makes `docx`, its Word document, and `odt`, an OpenDocument file: `["docx", "pdf"]` makes both. Default: the template's `output_format`. |
 
 In TypeScript, with the client module and helpers from `references/typescript.md`:
 
@@ -244,6 +244,9 @@ export async function generateInvoicePdf(
 - `files.pdf.permanent_url` doesn't expire, but needs the API token (HTTP Basic) and redirects to a temporary link:
   use it from the server only, never in a browser. It's the only link when the account turns off download links
   (`download_url` is null).
+- A Word template's Word document is `files.docx`, and its OpenDocument file `files.odt`, with the same links. For
+  another format of a processed submission, call `generateSubmissionFiles` with `formats` `["pdf"]`, `["docx"]` or
+  `["odt"]`: it doesn't use credits again.
 - Once `expires_in` passes, or after `expireSubmission`, `files` is empty and the PDF is gone.
 
 ## Many PDFs: `wait=false` and webhooks
@@ -336,6 +339,7 @@ What each code means: the `docspring` skill and https://docspring.com/docs/api-g
 - `docspring`: connecting, regions, test and live API tokens, what each error code means, rate limits.
 - `docspring-pdf-templates`: creating PDF templates, field names and types, publishing versions.
 - `docspring-html-templates`: HTML templates, including the `html` and `css` a submission can override.
+- `docspring-word-templates`: Word templates, their tags, and Word or PDF output.
 - `docspring-signature-requests`: submissions with `signature_requests`, signing links, signature request webhooks.
 - `docspring-embedded-forms`: forms and the template editor embedded in the user's site.
 

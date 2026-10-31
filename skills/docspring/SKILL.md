@@ -1,16 +1,16 @@
 ---
 name: docspring
-description: Connects to DocSpring, the service that fills PDF templates with data, generates PDFs from HTML templates and collects e-signatures, through its MCP server or REST API v2, and routes work to the other docspring-* skills. Covers access levels, API tokens, US and EU accounts, templates and their draft and published versions, submissions, test vs live PDFs and credits, IDs, sync waits, errors and rate limits. Use when the user mentions DocSpring or asks to list or fill their templates, make a PDF from a template, check a submission, review their account or find out why submissions failed, or connect DocSpring, or when a project has a docspring package, tpl_ IDs, DOCSPRING_TOKEN_ID or sync.api.docspring.com. Not for reading, merging or editing local PDF files without DocSpring (use a general PDF skill).
+description: Connects to DocSpring, the service that fills PDF and Word templates with data, generates PDFs from HTML templates and collects e-signatures, through its MCP server or REST API v2, and routes work to the other docspring-* skills. Covers access levels, API tokens, US and EU accounts, templates and their draft and published versions, submissions, test vs live PDFs and credits, IDs, sync waits, errors and rate limits. Use when the user mentions DocSpring or asks to list or fill their templates, make a PDF or Word document from a template, check a submission, review their account or find out why submissions failed, or connect DocSpring, or when a project has a docspring package, tpl_ IDs, DOCSPRING_TOKEN_ID or sync.api.docspring.com. Not for reading, merging or editing local PDF files without DocSpring (use a general PDF skill).
 license: MIT
 metadata:
-  version: '1.1.0'
+  version: '1.1.1'
   author: DocSpring
 ---
 
 # DocSpring
 
-DocSpring fills PDF templates with data, generates PDFs from HTML templates and collects e-signatures with signature
-requests. You reach it through the DocSpring MCP server, the REST API (v2) or the 4.x API clients. This skill says how
+DocSpring fills PDF and Word templates with data, generates PDFs from HTML templates and collects e-signatures with
+signature requests. You reach it through the DocSpring MCP server, the REST API (v2) or the 4.x API clients. This skill says how
 to connect, the rules every DocSpring task follows, and which skill to load next.
 
 ## Rules for every task
@@ -51,7 +51,8 @@ allows:
   (`list_templates`, `get_template`, `get_template_schema`, `get_template_pages`, `list_submissions`,
   `get_submission`), and check data with `validate_data`.
 - **Read and write** (adds `write`): create and edit templates and fields, `publish_version`, manage folders,
-  `generate_pdf`, `generate_pdfs`, `combine_pdfs`, `get_submission_pages` and `create_signature_request`.
+  `generate_pdf`, `generate_pdfs`, `combine_pdfs`, `get_submission_pages`, `generate_submission_files` and
+  `create_signature_request`.
 - **Full access** (adds `delete` and `webhooks`): `delete_template`, `delete_version`, `delete_folder` and
   `expire_submission`, which can't be undone (confirm with the user first), and `list_webhooks`, `create_webhook`,
   `update_webhook` and `delete_webhook`. The webhook tools only see the webhooks this connection created, so an empty
@@ -116,14 +117,16 @@ is the US.
 
 ## What's in an account
 
-- **Template** (`tpl_...`): a PDF with fields placed on it (`template_type` `pdf`), or HTML and SCSS that DocSpring
-  renders as a PDF (`html`). The type can't change.
+- **Template** (`tpl_...`): a PDF with fields placed on it (`template_type` `pdf`), HTML and SCSS that DocSpring
+  renders as a PDF (`html`), or a Word document with tags that DocSpring fills in to make Word documents or PDFs
+  (`docx`). The type can't change.
 - **Field** (an integer ID within its template): one value the template takes, with a name, type, page and position.
   Submission data is keyed by field name.
 - **Version** (`1.2.0`): a published, read-only copy of the template. Edits change the draft. `version` takes `1.2.0`,
   `1` (the latest 1.x.x), `latest` or `draft`.
 - **Folder** (`fld_...`): holds templates and other folders.
-- **Submission** (`sub_...`): one fill of a template, with its data, `state` and PDF (`files.pdf`).
+- **Submission** (`sub_...`): one fill of a template, with its data, `state` and files: its PDF (`files.pdf`), or a
+  Word template's Word document (`files.docx`).
 - **Batch** (`sbb_...`): up to 50 submissions in one request (`generate_pdfs`, `POST /submissions/batches`).
 - **Combined PDF** (`com_...`): one PDF merged from submissions, templates, other combined PDFs, custom files
   (`cfi_...`, PDFs the user uploaded) or URLs.
@@ -132,7 +135,7 @@ is the US.
 - **Webhook** (`whk_...`): a URL that DocSpring sends a signed `POST` to for each event, such as `submission.processed`.
 - **Request ID** (`req_...`): the `request_id` in every error. The user quotes it to support@docspring.com.
 
-A submission is `pending`, then `processed` once its PDF is ready. It can wait at `waiting_for_signature_requests`,
+A submission is `pending`, then `processed` once its files are ready. It can wait at `waiting_for_signature_requests`,
 `insufficient_credits` or `account_suspended`, end at `invalid_data` (see `data_errors`) or `declined`, or fail with an
 `error_message` (`error`, `syntax_error`, `image_download_failed`, `image_processing_failed`). New states can be
 added: handle ones you don't know. `files.pdf.download_url` works for 24 hours. REST results also have
@@ -151,7 +154,8 @@ template makes its submissions public).
   `web` is DocSpring's own forms (a hosted form link, an embedded web or visual form) or someone signed in to
   DocSpring, so its data came from a DocSpring form, not the user's code: check the template's fields and form
   settings before you blame their integration. `reprocess` is a copy made to generate a PDF again.
-- **Templates:** each one in `list_templates` says whether it's `ready`. An HTML template always is. A PDF template is
+- **Templates:** each one in `list_templates` says whether it's `ready`. An HTML template always is, and a Word
+  template is once its Word document is stored (while a `document_url` downloads, `document.state` is `downloading`). A PDF template is
   `ready` once its PDF is stored and every page is done: its image is made and its fields are set up (no
   `document.page_processing_statuses` entry has `fields` `pending` or `naming`). It doesn't wait for
   `document.field_logic_status`. When `ready` is `false`, `get_template`'s `document` says why:
@@ -245,8 +249,8 @@ With the MCP server:
 2. `get_template_schema`, for each field's name, type and whether it's required.
 3. `validate_data`, when you've built the data from loose input.
 4. `generate_pdf` with `test: true`. It waits and returns the submission.
-5. Give the user `files.pdf.download_url` and say it works for 24 hours (`get_submission` returns a new one). To
-   check the PDF yourself, look at it with `get_submission_pages`.
+5. Give the user `files.pdf.download_url` (`files.docx.download_url` for a Word document) and say it works for 24
+   hours (`get_submission` returns a new one). To check the PDF yourself, look at it with `get_submission_pages`.
 
 Over the API, the same steps are `GET /templates?query=...`, `GET /templates/{template_id}/schema`,
 `POST /templates/{template_id}/submissions/validate` and `POST /templates/{template_id}/submissions`. For up to 50
@@ -260,6 +264,8 @@ Load the skill for the task. If it isn't installed, read its docs page instead.
   images, publish versions. Docs: https://docspring.com/docs/template-editor/introduction/
 - **`docspring-html-templates`**: build or edit an HTML template (HTML, SCSS, Liquid), check how it renders, or turn a
   PDF into an HTML template. Docs: https://docspring.com/docs/html-templates/overview/
+- **`docspring-word-templates`**: turn a Word document into a template, add or fix its tags, check how it fills in,
+  and get Word documents, PDFs or both. Docs: https://docspring.com/docs/word-templates/overview/
 - **`docspring-api-integration`**: write app code that generates PDFs with an API client, types for a template's data,
   webhook handlers and error handling. Docs: https://docspring.com/docs/api-guide/install-api-client/
 - **`docspring-signature-requests`**: collect e-signatures from one or more signers, signing links, embedded signing.
