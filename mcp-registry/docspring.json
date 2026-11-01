@@ -1,0 +1,27 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.docspring/mcp",
+  "title": "DocSpring",
+  "description": "Fill PDF and Word templates, generate PDFs and Word documents, and collect e-signatures.",
+  "version": "1.4.0",
+  "websiteUrl": "https://docspring.com/docs/mcp/",
+  "repository": {
+    "url": "https://github.com/DocSpring/skills",
+    "source": "github"
+  },
+  "icons": [
+    {
+      "src": "https://docspring.com/android-chrome-512x512.png",
+      "mimeType": "image/png",
+      "sizes": [
+        "512x512"
+      ]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.docspring.com/mcp"
+    }
+  ]
+}

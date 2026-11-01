@@ -75,8 +75,9 @@ Details: [field data types](https://docspring.com/docs/reference/field-data-type
 
 ## 3. Shared and per-field settings
 
-Fields with the same name share one value and these **shared settings**. Changing one changes it for every field
-with the name, and a field added with an existing name takes them:
+Fields with the same name share one value and these **shared settings**. Changing one with `update_fields` changes it
+for every field with the name. A field added with an existing name takes them: `add_fields` refuses one that sets a
+shared setting to another value, so leave them out when you add a copy.
 
 `type`, `required` (default `true`), `default`, `title`, `description`, `placeholder`, `metadata`, `option_list`,
 `static`, `editable`, `dependencies`, `integer`, `minimum`, `maximum`, `exclusive_minimum`, `exclusive_maximum`,
