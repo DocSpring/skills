@@ -3,7 +3,7 @@ name: docspring-word-templates
 description: Creates and fixes DocSpring Word templates, Word documents (.docx) with Liquid tags that DocSpring fills in with submission data to make Word documents or PDFs. Covers tags (values, filters, conditions, loops over table rows, pictures, signatures, barcodes), the fields DocSpring adds from them, replacing the document, previews and output formats. Use when the user wants to turn a Word document into a DocSpring template, add or fix its tags, find out why a Word template's submission failed, or get Word documents or PDFs from one, or when a project has template_type "docx", output_format, tpl_ IDs or a docspring package. Not for Word files DocSpring doesn't fill in (use a general Word skill), HTML templates (docspring-html-templates), PDF templates (docspring-pdf-templates) or app code that calls the API (docspring-api-integration).
 license: MIT
 metadata:
-  version: '1.5.2'
+  version: '1.5.3'
   author: DocSpring
 ---
 

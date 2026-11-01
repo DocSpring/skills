@@ -66,15 +66,14 @@ DocSpring has an MCP server in each region:
 - `docspring`: `https://mcp.docspring.com/mcp`, for accounts at app.docspring.com
 - `docspring-eu`: `https://mcp-eu.docspring.com/mcp`, for accounts at app-eu.docspring.com
 
-In Claude Code, the plugin connects `docspring` only. If your account is at app-eu.docspring.com, add `docspring-eu`
-and sign in to it in `/mcp`:
+The plugin connects `docspring` only. If your account is at app-eu.docspring.com, add `docspring-eu` yourself and sign
+in to it. In Claude Code, add it, then select it in `/mcp`:
 
 ```sh
 claude mcp add --transport http --scope user docspring-eu https://mcp-eu.docspring.com/mcp
 ```
 
-In other agents, the plugin lists both servers. Sign in to the one for your account's region and leave the other
-disconnected.
+For other agents, see [MCP server setup](https://docspring.com/docs/mcp/) and use the EU URL.
 
 When you sign in, you choose what the agent can do: read only, read and write, or full access. Connecting without the
 plugin, and what each access level allows: [MCP server setup](https://docspring.com/docs/mcp/).

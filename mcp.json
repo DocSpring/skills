@@ -4,10 +4,6 @@
     "docspring": {
       "type": "streamable-http",
       "url": "https://mcp.docspring.com/mcp"
-    },
-    "docspring-eu": {
-      "type": "streamable-http",
-      "url": "https://mcp-eu.docspring.com/mcp"
     }
   }
 }

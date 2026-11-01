@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "docspring",
-      "version": "1.5.2",
+      "version": "1.5.3",
       "description": "Fill PDF and Word templates, generate PDFs from HTML templates and collect e-signatures with DocSpring's skills and MCP server.",
       "author": {
         "name": "DocSpring",
