@@ -17,8 +17,9 @@ https://docspring.com/docs/forms/js-libraries/signature-requests-js/
 
 ## 1. The flow
 
-1. The server creates the submission with its signature requests (`references/api.md`). Use the `auth_type` the app
-   really used to sign the person in.
+1. The server creates the submission with its signature requests (`references/api.md`), with `send_email: false`:
+   otherwise DocSpring also emails the person a link to sign. Use the `auth_type` the app really used to sign the
+   person in.
 2. When the person opens the signing page in the app, the server creates a token:
    `POST /signature_requests/{signature_request_id}/tokens` with no body (an `api` token, 24 hours).
 3. The server passes the signature request's ID and the token's `id` and `secret` to the page. Never the API token.

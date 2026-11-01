@@ -3,7 +3,7 @@
   "name": "com.docspring/mcp-eu",
   "title": "DocSpring (EU)",
   "description": "DocSpring for EU accounts: fill PDF and Word templates, generate PDFs, and collect e-signatures.",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "websiteUrl": "https://docspring.com/docs/mcp/",
   "repository": {
     "url": "https://github.com/DocSpring/skills",
