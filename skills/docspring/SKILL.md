@@ -3,7 +3,7 @@ name: docspring
 description: Connects to DocSpring, the service that fills PDF and Word templates with data, generates PDFs from HTML templates and collects e-signatures, through its MCP server or REST API v2, and routes work to the other docspring-* skills. Covers access levels, API tokens, US and EU accounts, templates and their draft and published versions, submissions, test vs live PDFs and credits, IDs, sync waits, errors and rate limits. Use when the user mentions DocSpring or asks to list or fill their templates, make a PDF or Word document from a template, check a submission, review their account or find out why submissions failed, or connect DocSpring, or when a project has a docspring package, tpl_ IDs, DOCSPRING_TOKEN_ID or sync.api.docspring.com. Not for reading, merging or editing local PDF files without DocSpring (use a general PDF skill).
 license: MIT
 metadata:
-  version: '1.2.0'
+  version: '1.3.0'
   author: DocSpring
 ---
 
@@ -49,15 +49,16 @@ allows:
 
 - **Read only** (`read`): look at templates, fields, page images, versions, folders and submissions
   (`list_templates`, `get_template`, `get_template_schema`, `get_template_pages`, `list_submissions`,
-  `get_submission`), and check data with `validate_data`.
+  `get_submission`), email actions and email domains (`list_email_actions`, `list_email_domains`), and check data with
+  `validate_data`.
 - **Read and write** (adds `write`): create and edit templates and fields, `publish_version`, manage folders,
-  `generate_pdf`, `generate_pdfs`, `combine_pdfs`, `get_submission_pages`, `generate_submission_files` and
-  `create_signature_request`.
-- **Full access** (adds `delete` and `webhooks`): `delete_template`, `delete_version`, `delete_folder` and
-  `expire_submission`, which can't be undone (confirm with the user first), and `list_webhooks`, `create_webhook`,
-  `update_webhook` and `delete_webhook`. The webhook tools only see the webhooks this connection created, so an empty
-  `list_webhooks` doesn't mean the account has none: the user sees them all on the **Webhooks** page in DocSpring,
-  and `GET /webhooks` with an API token lists them all.
+  `generate_pdf`, `generate_pdfs`, `combine_pdfs`, `get_submission_pages`, `generate_submission_files`,
+  `create_signature_request`, `add_email_domain` and `verify_email_domain`.
+- **Full access** (adds `delete` and `integrations`): `delete_template`, `delete_version`, `delete_folder`,
+  `expire_submission` and `delete_email_domain`, which can't be undone (confirm with the user first); `list_webhooks`,
+  `create_webhook`, `update_webhook` and `delete_webhook`; and `create_email_action`, `update_email_action`,
+  `delete_email_action`, `customize_email_action`, `reset_email_action_customization` and `send_test_email`. To
+  change an account email action for one template, use `customize_email_action`, not a new email action.
 
 When the tool you need isn't listed, tell the user: they disconnect DocSpring under **Integrations > Connected apps**
 in DocSpring, then sign in again and choose more access.
@@ -278,7 +279,7 @@ Load the skill for the task. If it isn't installed, read its docs page instead.
   Docs: https://docspring.com/docs/guides/embedded-forms/embedded-web-forms/
 
 Stay in this skill for quick account work over the MCP server: finding templates and submissions, a test PDF or a
-batch, combining PDFs, folders (`list_folders`, `create_folder`, `move_template`) and webhooks.
+batch, combining PDFs, folders (`list_folders`, `create_folder`, `move_template`), webhooks and email actions.
 
 ## Docs
 

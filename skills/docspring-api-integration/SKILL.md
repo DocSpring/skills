@@ -3,7 +3,7 @@ name: docspring-api-integration
 description: Writes application code that generates PDFs with DocSpring through its official 4.x API clients (API v2), covering client setup, typed models for a template's data, the sync API, downloads, batches, combined PDFs, webhook signatures, error handling and tests that catch template changes. Use when the user wants their app to fill a template or generate PDFs with DocSpring ("generate an invoice PDF with DocSpring when an order is paid"), or when a project uses it, such as a docspring, docspring-ts or DocSpring.Client package, DOCSPRING_TOKEN_ID, tpl_ template IDs, sync.api.docspring.com, createSubmission, or 3.x code calling generatePdf. Not for one PDF made from a chat (docspring), building templates (docspring-pdf-templates, docspring-html-templates, docspring-word-templates), signing flows (docspring-signature-requests), or local PDF libraries such as ReportLab or pdf-lib.
 license: MIT
 metadata:
-  version: '1.2.0'
+  version: '1.3.0'
   author: DocSpring
 ---
 
@@ -75,8 +75,6 @@ The MCP server signs in as the user; the app needs its own API token.
 - With neither, ask the user to connect the MCP server (https://docspring.com/docs/mcp/) or create an API token at
   https://app.docspring.com/api_tokens (EU: https://app-eu.docspring.com/api_tokens). Never invent template IDs or
   field names.
-- Create the app's webhooks with its API token (`createWebhook`) or in the dashboard, not with the MCP server's
-  `create_webhook`: a webhook an MCP connection creates is deleted when that connection is removed.
 
 ## Don't write API v1 code
 
