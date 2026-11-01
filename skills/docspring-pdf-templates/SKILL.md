@@ -3,7 +3,7 @@ name: docspring-pdf-templates
 description: Turns a user's PDF form into a working DocSpring PDF template. Creates it from a link or file, detects or imports its fields, checks them against page images, fixes names, types, positions, checkboxes and signature fields, test-fills the draft and publishes a version. Use when the user wants to make a PDF fillable with DocSpring, set up or fix a template's fields, replace a template's PDF, copy or move templates, or compare, publish or restore template versions, or when a project uses DocSpring (a docspring package, tpl_ template IDs, sync.api.docspring.com). Not for HTML templates, app code that generates PDFs or sending documents for signature (other DocSpring skills), or for filling or editing a PDF on disk without DocSpring.
 license: MIT
 metadata:
-  version: '1.3.0'
+  version: '1.3.1'
   author: DocSpring
 ---
 
