@@ -3,7 +3,7 @@ name: docspring
 description: Connects to DocSpring, the service that fills PDF and Word templates with data, generates PDFs from HTML templates and collects e-signatures, through its MCP server or REST API v2, and routes work to the other docspring-* skills. Covers access levels, API tokens, US and EU accounts, templates and their draft and published versions, submissions, test vs live PDFs and credits, IDs, sync waits, errors and rate limits. Use when the user mentions DocSpring or asks to list or fill their templates, make a PDF or Word document from a template, check a submission, review their account or find out why submissions failed, or connect DocSpring, or when a project has a docspring package, tpl_ IDs, DOCSPRING_TOKEN_ID or sync.api.docspring.com. Not for reading, merging or editing local PDF files without DocSpring (use a general PDF skill).
 license: MIT
 metadata:
-  version: '1.5.0'
+  version: '1.5.1'
   author: DocSpring
 ---
 
@@ -42,7 +42,10 @@ to connect, the rules every DocSpring task follows, and which skill to load next
 
 Use its tools when they're available. There are two servers, one per region: `docspring` (US,
 `https://mcp.docspring.com/mcp`) and `docspring-eu` (EU, `https://mcp-eu.docspring.com/mcp`). Use whichever is
-connected. If both are, ask the user which account to work in: an ID from one region doesn't exist in the other.
+connected. If both are, ask the user which account to work in: an ID from one region doesn't exist in the other. If
+only `docspring` is connected and the user's account is in the EU (they sign in at `app-eu.docspring.com`, or sign-in
+doesn't know their account), tell them to add the EU server, named `docspring-eu` (`https://mcp-eu.docspring.com/mcp`),
+as https://docspring.com/docs/mcp/ explains.
 
 The user signs in to DocSpring in the browser (OAuth, no API token) and chooses the access. You only see the tools it
 allows:

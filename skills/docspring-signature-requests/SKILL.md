@@ -3,7 +3,7 @@ name: docspring-signature-requests
 description: Collects e-signatures with DocSpring signature requests. Sends a PDF template to one or more signers, whom DocSpring emails (in order and with reminders when asked) or who get links the user sends, embeds the signing form in an app with Signature Requests JS, and tracks signers, the signed PDF and the audit trail. Use when the user wants someone to sign, initial or fill in a DocSpring template, asks to send a document for signature, for signing links, e-signatures, several signers, a signing order or a signing page in their app, or works on code that sends signature_requests to DocSpring (data_requests in API v1 code), loads signature_request.v*.js or handles signature_request webhook events. Not for signing or stamping a local PDF without DocSpring, filling a template that nobody signs (docspring), or adding signature fields to a template (docspring-pdf-templates).
 license: MIT
 metadata:
-  version: '1.5.0'
+  version: '1.5.1'
   author: DocSpring
 ---
 
