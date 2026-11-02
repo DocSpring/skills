@@ -47,6 +47,12 @@ In a Copilot CLI session or VS Code's chat:
 gemini extensions install https://github.com/DocSpring/skills
 ```
 
+### Grok Build
+
+```sh
+grok plugin install DocSpring/skills
+```
+
 ### Other agents
 
 Install the skills into Cursor, Windsurf, OpenCode and about 80 other agents with the

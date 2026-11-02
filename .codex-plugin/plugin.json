@@ -1,13 +1,13 @@
 {
   "name": "docspring",
-  "version": "1.5.3",
+  "version": "1.7.0",
   "description": "Fill PDF and Word templates, generate PDFs from HTML templates and collect e-signatures with DocSpring's skills and MCP server.",
   "author": {
     "name": "DocSpring",
     "email": "support@docspring.com",
     "url": "https://docspring.com"
   },
-  "homepage": "https://docspring.com/docs/mcp/",
+  "homepage": "https://docspring.com/connect-your-ai",
   "repository": "https://github.com/DocSpring/skills",
   "license": "MIT",
   "keywords": [
