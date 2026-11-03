@@ -3,7 +3,7 @@ name: docspring-pdf-templates
 description: Turns a user's PDF form into a working DocSpring PDF template. Creates it from a link or file, detects or imports its fields, checks them against page images, fixes names, types, positions, checkboxes and signature fields, test-fills the draft and publishes a version. Use when the user wants to make a PDF fillable with DocSpring, set up or fix a template's fields, replace a template's PDF, copy or move templates, or compare, publish or restore template versions, or when a project uses DocSpring (a docspring package, tpl_ template IDs, sync.api.docspring.com). Not for HTML templates, app code that generates PDFs or sending documents for signature (other DocSpring skills), or for filling or editing a PDF on disk without DocSpring.
 license: MIT
 metadata:
-  version: '1.7.0'
+  version: '1.8.0'
   author: DocSpring
 ---
 
@@ -40,11 +40,13 @@ it in. This skill takes the user's PDF to a template that fills in correctly, th
 
 1. **The DocSpring MCP server** (`docspring` for US accounts, `docspring-eu` for EU), when its tools are available:
    use the tools named here. Writes need a connection with read and write access.
-2. **The REST API v2**, when you can run code and the user has an API token (its ID and secret are the HTTP Basic
+2. **The DocSpring CLI** (`docspring`), when you can run shell commands and it's installed: "REST and CLI
+   equivalents" below has the command for each tool. The `docspring` skill covers logging in, `--json` and exit codes.
+3. **The REST API v2**, when you can run code and the user has an API token (its ID and secret are the HTTP Basic
    username and password): `https://sync.api.docspring.com/api/v2` (EU: `https://sync.api-eu.docspring.com/api/v2`),
-   which waits for PDFs. "REST equivalents" below maps each tool to its endpoint; the 4.x API clients have the same
-   operations.
-3. **Neither:** tell the user how to [connect the MCP server](https://docspring.com/docs/mcp/) or
+   which waits for PDFs. The same table maps each tool to its endpoint; the 4.x API clients have the same operations.
+4. **None of them:** tell the user how to [connect the MCP server](https://docspring.com/docs/mcp/),
+   [install the CLI](https://docspring.com/docs/cli/) or
    [create an API token](https://docspring.com/docs/api-guide/authentication/). Don't guess. The `docspring` skill
    covers connecting, regions, test and live PDFs, and errors.
 
@@ -53,9 +55,10 @@ it in. This skill takes the user's PDF to a template that fills in correctly, th
 Choose the PDF's source in this order:
 
 - **It's online:** `create_pdf_template` with `document_url` (an `https://` link, up to 100 MB).
-- **It's a local file and you can run commands:** call `create_pdf_upload`, run the `curl` command it returns with the
-  file's path in place of `/path/to/document.pdf` (within the hour), then call `create_pdf_template` with its
-  `cache_id` and the file's `filename`. This works for a PDF up to 100 MB and keeps the file out of your context.
+- **It's a local file and you can run commands:** with the CLI, `docspring templates upload <file> --name "<name>"
+--detect-fields --json`. Otherwise call `create_pdf_upload`, run the `curl` command it returns with the file's path
+  in place of `/path/to/document.pdf` (within the hour), then call `create_pdf_template` with its `cache_id` and the
+  file's `filename`. Both work for a PDF up to 100 MB and keep the file out of your context.
 - **It's small and you can't run commands:** `document_base64` (up to 7 MB before encoding; a `data:` URI works), with
   `filename`. The whole file goes into your tool call, so use this only for a small PDF.
 - **Nothing works** (no network for `curl`, a large file): ask the user for a link, or to upload the PDF in DocSpring
@@ -308,37 +311,40 @@ Then check the pages, test-fill (step 5), and check `diff_versions` (`document_c
   code that use its ID stop working. Use it only when the user asks, and confirm the template's name and ID with them
   first.
 
-## REST equivalents
+## REST and CLI equivalents
 
-Paths are under `/api/v2`, and field settings have the same names as in the tools.
+Paths are under `/api/v2`, and field settings have the same names as in the tools. CLI commands start with
+`docspring` (add `--json`), and their `--data` is the REST request's body.
 
-| Tool                                   | REST                                                                                                |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `create_pdf_template`                  | `POST /templates` (JSON with `template_type: "pdf"`), or `POST /templates/upload` (multipart)       |
-| `create_pdf_upload`                    | `GET /uploads/presign`, then POST its `fields` and the file (as `file`, last) to its `url`          |
-| `get_template`, `list_versions`        | `GET /templates/{template_id}`                                                                      |
-| `get_fields`, `get_template_pages`     | `GET /templates/{template_id}/fields`, `GET /templates/{template_id}/page_images`                   |
-| `add_fields`, `update_fields`          | `POST`, `PUT /templates/{template_id}/fields`                                                       |
-| `remove_fields`                        | `POST /templates/{template_id}/fields/remove` (and `/fields/reorder`: later fields print on top)    |
-| `update_template`                      | `PUT /templates/{template_id}`                                                                      |
-| `get_template_schema`, `validate_data` | `GET /templates/{template_id}/schema`, `POST /templates/{template_id}/submissions/validate`         |
-| `preview_template`                     | `POST /templates/{template_id}/previews`, then `GET /templates/{template_id}/previews/{preview_id}` |
-| `generate_pdf`                         | `POST /templates/{template_id}/submissions?version=draft`                                           |
-| `get_submission_pages`                 | `POST /submissions/{submission_id}/generate_files` with `{"formats": ["png"]}`                      |
-| `diff_versions`                        | `GET /templates/{template_id}/diff`                                                                 |
-| `publish_version`, `restore_version`   | `POST /templates/{template_id}/publish_version`, `/restore_version`                                 |
-| `delete_version`, `delete_template`    | `DELETE /templates/{template_id}?version=1.2.0`, `DELETE /templates/{template_id}`                  |
-| `replace_template_pdf`                 | `PUT /templates/{template_id}/document`, or `/document/upload` (multipart)                          |
-| `copy_template`, `move_template`       | `POST /templates/{template_id}/copy`, `/move`                                                       |
-| folder tools                           | `GET`, `POST /folders`; `POST /folders/{folder_id}/rename`, `/move`; `DELETE /folders/{folder_id}`  |
+| Tool                                   | CLI                                                                                | REST                                                                                                |
+| -------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `create_pdf_template`                  | `templates create --data @template.json`, or `templates upload <file>`             | `POST /templates` (JSON with `template_type: "pdf"`), or `POST /templates/upload` (multipart)       |
+| `create_pdf_upload`                    | `uploads presign` (`templates upload` doesn't need it)                             | `GET /uploads/presign`, then POST its `fields` and the file (as `file`, last) to its `url`          |
+| `get_template`, `list_versions`        | `templates get <template_id>`                                                      | `GET /templates/{template_id}`                                                                      |
+| `get_fields`, `get_template_pages`     | `templates fields list <template_id>`, `templates page-images <template_id>`       | `GET /templates/{template_id}/fields`, `GET /templates/{template_id}/page_images`                   |
+| `add_fields`, `update_fields`          | `templates fields add`, `templates fields update`                                  | `POST`, `PUT /templates/{template_id}/fields`                                                       |
+| `remove_fields`                        | `templates fields remove` (and `templates fields reorder`)                         | `POST /templates/{template_id}/fields/remove` (and `/fields/reorder`: later fields print on top)    |
+| `update_template`                      | `templates update`                                                                 | `PUT /templates/{template_id}`                                                                      |
+| `get_template_schema`, `validate_data` | `templates schema`, `submissions validate`                                         | `GET /templates/{template_id}/schema`, `POST /templates/{template_id}/submissions/validate`         |
+| `preview_template`                     | `templates previews create`, then `templates previews get`                         | `POST /templates/{template_id}/previews`, then `GET /templates/{template_id}/previews/{preview_id}` |
+| `generate_pdf`                         | `submit <template_id> --version draft --test`                                      | `POST /templates/{template_id}/submissions?version=draft`                                           |
+| `get_submission_pages`                 | `submissions generate-files <submission_id> --data '{"formats": ["png"]}'`         | `POST /submissions/{submission_id}/generate_files` with `{"formats": ["png"]}`                      |
+| `diff_versions`                        | `templates diff`                                                                   | `GET /templates/{template_id}/diff`                                                                 |
+| `publish_version`, `restore_version`   | `templates publish`, `templates restore`                                           | `POST /templates/{template_id}/publish_version`, `/restore_version`                                 |
+| `delete_version`, `delete_template`    | `templates delete <template_id> --version 1.2.0`, `templates delete <template_id>` | `DELETE /templates/{template_id}?version=1.2.0`, `DELETE /templates/{template_id}`                  |
+| `replace_template_pdf`                 | `templates update-document`, or `templates upload-document <template_id> <file>`   | `PUT /templates/{template_id}/document`, or `/document/upload` (multipart)                          |
+| `copy_template`, `move_template`       | `templates copy`, `templates move`                                                 | `POST /templates/{template_id}/copy`, `/move`                                                       |
+| folder tools                           | `folders list`, `create`, `rename`, `move`, `delete`                               | `GET`, `POST /folders`; `POST /folders/{folder_id}/rename`, `/move`; `DELETE /folders/{folder_id}`  |
 
 ```bash
+docspring templates upload rental-application.pdf --name "Rental application" --detect-fields --json
+# Without the CLI
 curl https://sync.api.docspring.com/api/v2/templates/upload \
   -u "$DOCSPRING_TOKEN_ID:$DOCSPRING_TOKEN_SECRET" \
   -F document=@rental-application.pdf -F name="Rental application" -F detect_fields=true
 ```
 
-Where REST differs from the tools:
+Where REST and the CLI differ from the tools:
 
 - `GET /templates/{template_id}` answers while the PDF is processing: poll it until `ready` is `true` and
   `document.field_logic_status` isn't `pending` or `processing`. A create or replace that runs out of time returns a

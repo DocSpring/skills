@@ -3,7 +3,7 @@ name: docspring-api-integration
 description: Writes application code that generates PDFs with DocSpring through its official 4.x API clients (API v2), covering client setup, typed models for a template's data, the sync API, downloads, batches, combined PDFs, webhook signatures, error handling and tests that catch template changes. Use when the user wants their app to fill a template or generate PDFs with DocSpring ("generate an invoice PDF with DocSpring when an order is paid"), or when a project uses it, such as a docspring, docspring-ts or DocSpring.Client package, DOCSPRING_TOKEN_ID, tpl_ template IDs, sync.api.docspring.com, createSubmission, or 3.x code calling generatePdf. Not for one PDF made from a chat (docspring), building templates (docspring-pdf-templates, docspring-html-templates, docspring-word-templates), signing flows (docspring-signature-requests), or local PDF libraries such as ReportLab or pdf-lib.
 license: MIT
 metadata:
-  version: '1.7.0'
+  version: '1.8.0'
   author: DocSpring
 ---
 
@@ -62,19 +62,20 @@ Elixir, Rust). Each has the full job, error helper, webhook handler, code genera
 
 The MCP server signs in as the user; the app needs its own API token.
 
-| You need                    | MCP tool                                              | Client method (TypeScript)       |
-| --------------------------- | ----------------------------------------------------- | -------------------------------- |
-| The template ID (`tpl_...`) | `list_templates` (`query` by name)                    | `listTemplates`                  |
-| Its published versions      | `list_versions`, `get_template`                       | `getTemplate` (`latest_version`) |
-| The JSON Schema of its data | `get_template_schema`                                 | `getTemplateSchema`              |
-| Typed model code            | `get_model_code` (`language`)                         | `getTemplateModelCode`           |
-| Check sample data           | `validate_data`                                       | `validateSubmission`             |
-| A test PDF to look at       | `generate_pdf` (`test: true`), `get_submission_pages` | `createSubmission`               |
+| You need                    | MCP tool                                              | CLI (`docspring ... --json`)                           | Client method (TypeScript)       |
+| --------------------------- | ----------------------------------------------------- | ------------------------------------------------------ | -------------------------------- |
+| The template ID (`tpl_...`) | `list_templates` (`query` by name)                    | `templates list --query <name>`                        | `listTemplates`                  |
+| Its published versions      | `list_versions`, `get_template`                       | `templates get <template_id>`                          | `getTemplate` (`latest_version`) |
+| The JSON Schema of its data | `get_template_schema`                                 | `templates schema <template_id>`                       | `getTemplateSchema`              |
+| Typed model code            | `get_model_code` (`language`)                         | `templates model-code <template_id> --lang <language>` | `getTemplateModelCode`           |
+| Check sample data           | `validate_data`                                       | `submissions validate <template_id> --data @data.json` | `validateSubmission`             |
+| A test PDF to look at       | `generate_pdf` (`test: true`), `get_submission_pages` | `submit <template_id> --test --data @data.json`        | `createSubmission`               |
 
-- Without the MCP server, run a short script with the client and the user's API token from the environment.
-- With neither, ask the user to connect the MCP server (https://docspring.com/docs/mcp/) or create an API token at
-  https://app.docspring.com/api_tokens (EU: https://app-eu.docspring.com/api_tokens). Never invent template IDs or
-  field names.
+- Without the MCP server, use the DocSpring CLI when it's installed (the `docspring` skill covers logging in and its
+  output), or run a short script with the client and the user's API token from the environment.
+- With none of them, ask the user to connect the MCP server (https://docspring.com/docs/mcp/), install the CLI
+  (https://docspring.com/docs/cli/) or create an API token at https://app.docspring.com/api_tokens (EU:
+  https://app-eu.docspring.com/api_tokens). Never invent template IDs or field names.
 
 ## Don't write API v1 code
 

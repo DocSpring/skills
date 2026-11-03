@@ -3,7 +3,7 @@ name: docspring-html-templates
 description: Creates, restyles and fixes DocSpring HTML/CSS templates (Liquid HTML, SCSS, headers, footers, page size and margins), previewing the draft after each change and checking its pages visually. Also rebuilds a DocSpring PDF template as an HTML template that takes the same data. Use when the user wants to design or edit a DocSpring HTML template, fix its layout, page breaks, fonts, images, headers, footers or page numbers, debug a Liquid or SCSS error on a submission, or move from a PDF template to HTML/CSS, or when a project has template_type "html", tpl_ IDs, a docspring package or sync.api.docspring.com. Not for fields on PDF templates (docspring-pdf-templates), app code that calls the API (docspring-api-integration), Shopify Liquid, or HTML-to-PDF with Puppeteer or other local tools.
 license: MIT
 metadata:
-  version: '1.7.0'
+  version: '1.8.0'
   author: DocSpring
 ---
 
@@ -37,10 +37,13 @@ so every change goes through the render-and-look loop below.
 
 1. **The DocSpring MCP server** (`docspring` for US accounts, `docspring-eu` for EU), when its tools are available.
    Edits need read and write access.
-2. **The REST API v2**, when you can run code and the user has an API token: "REST equivalents" below maps each tool
-   to its endpoint.
-3. **Neither:** ask the user to connect the MCP server (`https://docspring.com/docs/mcp/`) or create an API token.
-   The `docspring` skill covers connecting, regions, test and live PDFs, and errors.
+2. **The DocSpring CLI** (`docspring`), when you can run shell commands and it's installed: "REST and CLI
+   equivalents" below has the command for each tool. The `docspring` skill covers logging in, `--json` and exit codes.
+3. **The REST API v2**, when you can run code and the user has an API token: the same table maps each tool to its
+   endpoint.
+4. **None of them:** ask the user to connect the MCP server (`https://docspring.com/docs/mcp/`), install the CLI
+   (`https://docspring.com/docs/cli/`) or create an API token. The `docspring` skill covers connecting, regions, test
+   and live PDFs, and errors.
 
 ## The render-and-look loop
 
@@ -244,26 +247,30 @@ so the user's integration only has to change the template ID.
    ID to webhooks limited by `template_ids`, and updates code that checks a submission's `template_id`. Keep the old
    template until the new one has run in production. The `docspring-api-integration` skill covers the code changes.
 
-## REST equivalents
+## REST and CLI equivalents
 
 Send JSON to `https://sync.api.docspring.com/api/v2` (EU: `https://sync.api-eu.docspring.com/api/v2`) with HTTP Basic
-auth (the API token's ID and secret).
+auth (the API token's ID and secret). With the CLI, each step is a `docspring` command (add `--json`), and its
+`--data` is the REST request's body.
 
-| Step                   | MCP tool                            | REST                                                                                                                                              |
-| ---------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Read the template      | `get_template`                      | `GET /templates/{template_id}` (the draft by default)                                                                                             |
-| Fields and data schema | `get_fields`, `get_template_schema` | `GET /templates/{template_id}/fields`, `GET /templates/{template_id}/schema?version=draft`                                                        |
-| Create                 | `create_html_template`              | `POST /templates` with `"template_type": "html"` (also takes `html_engine_options`)                                                               |
-| Change                 | `update_template`                   | `PUT /templates/{template_id}` with the settings as the body                                                                                      |
-| Add fields             | `add_fields`                        | `POST /templates/{template_id}/fields` with `{"fields": [...]}`                                                                                   |
-| Render and look        | `preview_template`                  | `POST /templates/{template_id}/previews` with `{"data": {...}}`, then `GET /templates/{template_id}/previews/{preview_id}` until it's `processed` |
-| Test PDF               | `generate_pdf`                      | `POST /templates/{template_id}/submissions?version=draft` with `"test": true`                                                                     |
-| Check data             | `validate_data`                     | `POST /templates/{template_id}/submissions/validate?version=draft`                                                                                |
-| What changed           | `diff_versions`                     | `GET /templates/{template_id}/diff`                                                                                                               |
-| Publish                | `publish_version`                   | `POST /templates/{template_id}/publish_version` with `{"version_type": "patch"}`                                                                  |
-| A PDF template's pages | `get_template_pages`                | `GET /templates/{template_id}/page_images`                                                                                                        |
+| Step                   | MCP tool                            | CLI                                                                                                                   | REST                                                                                                                                              |
+| ---------------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Read the template      | `get_template`                      | `templates get <template_id>`                                                                                         | `GET /templates/{template_id}` (the draft by default)                                                                                             |
+| Fields and data schema | `get_fields`, `get_template_schema` | `templates fields list <template_id>`, `templates schema <template_id> --version draft`                               | `GET /templates/{template_id}/fields`, `GET /templates/{template_id}/schema?version=draft`                                                        |
+| Create                 | `create_html_template`              | `templates create --data @template.json`                                                                              | `POST /templates` with `"template_type": "html"` (also takes `html_engine_options`)                                                               |
+| Change                 | `update_template`                   | `templates update <template_id> --data @settings.json`                                                                | `PUT /templates/{template_id}` with the settings as the body                                                                                      |
+| Add fields             | `add_fields`                        | `templates fields add <template_id> --data @fields.json`                                                              | `POST /templates/{template_id}/fields` with `{"fields": [...]}`                                                                                   |
+| Render and look        | `preview_template`                  | `templates previews create <template_id> --data @data.json`, then `templates previews get <template_id> <preview_id>` | `POST /templates/{template_id}/previews` with `{"data": {...}}`, then `GET /templates/{template_id}/previews/{preview_id}` until it's `processed` |
+| Test PDF               | `generate_pdf`                      | `submit <template_id> --version draft --test --data @data.json`                                                       | `POST /templates/{template_id}/submissions?version=draft` with `"test": true`                                                                     |
+| Check data             | `validate_data`                     | `submissions validate <template_id> --version draft --data @data.json`                                                | `POST /templates/{template_id}/submissions/validate?version=draft`                                                                                |
+| What changed           | `diff_versions`                     | `templates diff <template_id>`                                                                                        | `GET /templates/{template_id}/diff`                                                                                                               |
+| Publish                | `publish_version`                   | `templates publish <template_id> --data '{"version_type": "patch"}'`                                                  | `POST /templates/{template_id}/publish_version` with `{"version_type": "patch"}`                                                                  |
+| A PDF template's pages | `get_template_pages`                | `templates page-images <template_id>`                                                                                 | `GET /templates/{template_id}/page_images`                                                                                                        |
 
 ```bash
+docspring templates previews create "$TEMPLATE_ID" --data '{"data": {"invoice_number": "INV-1001"}}' --json
+docspring templates previews get "$TEMPLATE_ID" "$PREVIEW_ID" --json
+# Without the CLI
 curl -sS "https://sync.api.docspring.com/api/v2/templates/$TEMPLATE_ID/previews" \
   -u "$DOCSPRING_TOKEN_ID:$DOCSPRING_TOKEN_SECRET" -H 'Content-Type: application/json' \
   -d '{"data": {"invoice_number": "INV-1001"}}'

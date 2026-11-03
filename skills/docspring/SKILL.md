@@ -1,17 +1,18 @@
 ---
 name: docspring
-description: Connects to DocSpring, the service that fills PDF and Word templates with data, generates PDFs from HTML templates and collects e-signatures, through its MCP server or REST API v2, and routes work to the other docspring-* skills. Covers access levels, API tokens, US and EU accounts, templates and their draft and published versions, submissions, test vs live PDFs and credits, IDs, sync waits, errors and rate limits. Use when the user mentions DocSpring or asks to list or fill their templates, make a PDF or Word document from a template, check a submission, review their account or find out why submissions failed, or connect DocSpring, or when a project has a docspring package, tpl_ IDs, DOCSPRING_TOKEN_ID or sync.api.docspring.com. Not for reading, merging or editing local PDF files without DocSpring (use a general PDF skill).
+description: Connects to DocSpring, the service that fills PDF and Word templates with data, generates PDFs from HTML templates and collects e-signatures, through its MCP server, CLI or REST API v2, and routes work to the other docspring-* skills. Covers access levels, API tokens, US and EU accounts, templates and their draft and published versions, submissions, test vs live PDFs and credits, IDs, sync waits, errors and rate limits. Use when the user mentions DocSpring or asks to list or fill their templates, make a PDF or Word document from a template, check a submission, review their account or find out why submissions failed, or connect DocSpring, or when a project has a docspring package, tpl_ IDs, DOCSPRING_TOKEN_ID or sync.api.docspring.com. Not for reading, merging or editing local PDF files without DocSpring (use a general PDF skill).
 license: MIT
 metadata:
-  version: '1.7.0'
+  version: '1.8.0'
   author: DocSpring
 ---
 
 # DocSpring
 
 DocSpring fills PDF and Word templates with data, generates PDFs from HTML templates and collects e-signatures with
-signature requests. You reach it through the DocSpring MCP server, the REST API (v2) or the 4.x API clients. This skill says how
-to connect, the rules every DocSpring task follows, and which skill to load next.
+signature requests. You reach it through the DocSpring MCP server, the DocSpring CLI (`docspring`), the REST API (v2)
+or the 4.x API clients. This skill says how to connect, the rules every DocSpring task follows, and which skill to load
+next.
 
 ## Rules for every task
 
@@ -74,9 +75,33 @@ returns the record's ID with `state: "processing"`: call `get_submission` with t
 API rate limit. Every tool and the access it needs:
 https://docspring.com/docs/mcp/tools/
 
-### 2. The REST API (v2) with an API token
+### 2. The DocSpring CLI
 
-Use it when you can run code and the user has an API token (an ID and a secret).
+Use it when you can run shell commands and `docspring --version` works. When it isn't installed, offer to install it
+(`brew install docspring/tap/docspring`, or another way from https://docspring.com/docs/cli/) before you use the REST
+API.
+
+- `docspring auth status` shows the credentials commands will use. With none, ask the user to run `docspring login`
+  (`docspring login --region EU` for an EU account), which opens their browser to sign in and choose the access, or to
+  set `DOCSPRING_TOKEN_ID` and `DOCSPRING_TOKEN_SECRET`. Never ask for the secret in the chat.
+- Pass `--json` to every command and read standard output: the API's response, or an error with a `code`, a `message`
+  and, when the request is invalid, the `details`. Exit status 3 means the request is invalid, its body or a parameter
+  (fix what `details` lists), 4 that there are no credentials, they don't allow the request or the keychain can't be
+  used, 2 a wrong command, option or argument, 5 that `templates model-code --check` found an out-of-date file, and 1
+  any other error.
+- Commands follow the API: `docspring templates list`, `docspring templates schema <template_id> --version draft`,
+  `docspring submissions get <submission_id>`. `--help` after a group or command lists its commands or options.
+- Write a request body to a file and pass `--data @body.json`, so the shell doesn't mangle it. The CLI checks the body
+  against the API's schemas before it sends it.
+- `docspring submit <template_id> --data @data.json --test -o filled.pdf` makes one PDF, waits for it and saves it.
+  Its body is the same as `submissions create`'s (`{"data": {...}}`). Leave out `--test` only for a real document. For
+  a Word template it saves what the template makes; `--format docx`, `odt` or `pdf` picks the file.
+- List commands return a page at a time: `--all` gets every page as one list, or pass the response's `next_cursor` as
+  `--cursor`.
+
+### 3. The REST API (v2) with an API token
+
+Use it when you can run code but not the CLI, and the user has an API token (an ID and a secret).
 
 - Base URL: `https://sync.api.docspring.com/api/v2` (EU: `https://sync.api-eu.docspring.com/api/v2`). Use these
   `sync.api` hosts for every request.
@@ -92,19 +117,20 @@ Use it when you can run code and the user has an API token (an ID and a secret).
 
 Details: https://docspring.com/docs/api-guide/authentication/
 
-### 3. The API clients
+### 4. The API clients
 
 The 4.x API clients (Ruby, Python, JavaScript, TypeScript, PHP, Java, C#, Go, Elixir, Rust) call API v2; the 3.x
 clients call API v1. They read the same environment variables and use the `sync.api` hosts by default. For app code,
 load `docspring-api-integration`. Moving from 3.x: https://docspring.com/docs/api-guide/migrating-to-api-v2/
 
-### Neither is available
+### None of them is available
 
 Tell the user how to connect instead of guessing at IDs or results:
 
 - **MCP server (for chat assistants):** add the region's URL to the assistant as a remote (HTTP) MCP server, then sign
   in to DocSpring when the assistant asks. If the server is already added but its tools aren't there, the user needs
   to sign in from the assistant's MCP or connector settings. Setup for each assistant: https://docspring.com/docs/mcp/
+- **CLI (for a terminal or a coding agent):** install it (https://docspring.com/docs/cli/), then run `docspring login`.
 - **API token (for code):** create one at https://app.docspring.com/api_tokens (EU:
   https://app-eu.docspring.com/api_tokens). A live token's secret is shown only once.
 - **No account yet:** https://docspring.com/sign_up (EU: https://eu.docspring.com/sign_up).

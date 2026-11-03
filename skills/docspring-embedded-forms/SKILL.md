@@ -3,7 +3,7 @@ name: docspring-embedded-forms
 description: Puts DocSpring forms and the template editor in a browser. Sets up hosted form links, embedded web forms (DocSpring.createSimpleForm) and visual forms (DocSpring.createVisualForm) with prefill, hidden fields, callbacks, redirects and the public template settings they need, and embeds the template editor (DocSpring.createTemplateEditor, embed_edit_token). Use when the user wants people to fill in a DocSpring template on their site or from a link, wants their own users to edit templates in their product, or has code loading simple_form, visual_form or template_editor from cdn.docspring.com. Not for e-signatures or embedded signing (docspring-signature-requests), server-side PDF generation or webhooks (docspring-api-integration), or other form builders.
 license: MIT
 metadata:
-  version: '1.7.0'
+  version: '1.8.0'
   author: DocSpring
 ---
 
@@ -59,11 +59,14 @@ JavaScript libraries, and its server uses an API token.
 
 1. **The DocSpring MCP server** (`docspring`, or `docspring-eu` for EU accounts): `get_template`,
    `get_template_schema`, `update_template`, `diff_versions`, `publish_version`, `copy_template`.
-2. **REST API v2**, `https://sync.api.docspring.com/api/v2` (EU: `sync.api-eu.docspring.com`), HTTP Basic auth with
+2. **The DocSpring CLI** (`docspring`), when you can run shell commands and it's installed: `templates get`,
+   `templates schema`, `templates update`, `templates diff`, `templates publish` and `templates copy`, each with the
+   template ID and `--json`. `--data` takes the REST request's body. The `docspring` skill covers logging in.
+3. **REST API v2**, `https://sync.api.docspring.com/api/v2` (EU: `sync.api-eu.docspring.com`), HTTP Basic auth with
    an API token: `GET` and `PUT /templates/{template_id}`, `GET /templates/{template_id}/schema`,
    `GET /templates/{template_id}/diff`, `POST /templates/{template_id}/publish_version` and `/copy`.
-3. **Neither:** ask the user to connect the MCP server (https://docspring.com/docs/mcp/), create an API token, or change
-   the setting in the template editor. Don't guess.
+4. **None of them:** ask the user to connect the MCP server (https://docspring.com/docs/mcp/), install the CLI
+   (https://docspring.com/docs/cli/), create an API token, or change the setting in the template editor. Don't guess.
 
 ## Template settings for forms
 

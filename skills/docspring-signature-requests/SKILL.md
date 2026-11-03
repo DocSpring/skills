@@ -3,7 +3,7 @@ name: docspring-signature-requests
 description: Collects e-signatures with DocSpring signature requests. Sends a PDF template to one or more signers, whom DocSpring emails (in order and with reminders when asked) or who get links the user sends, embeds the signing form in an app with Signature Requests JS, and tracks signers, the signed PDF and the audit trail. Use when the user wants someone to sign, initial or fill in a DocSpring template, asks to send a document for signature, for signing links, e-signatures, several signers, a signing order or a signing page in their app, or works on code that sends signature_requests to DocSpring (data_requests in API v1 code), loads signature_request.v*.js or handles signature_request webhook events. Not for signing or stamping a local PDF without DocSpring, filling a template that nobody signs (docspring), or adding signature fields to a template (docspring-pdf-templates).
 license: MIT
 metadata:
-  version: '1.7.0'
+  version: '1.8.0'
   author: DocSpring
 ---
 
@@ -52,9 +52,15 @@ API: new signature requests have `srq_...` IDs, older ones keep their `drq_...` 
 1. **The DocSpring MCP server** (`docspring` for US accounts, `docspring-eu` for EU): `create_signature_request`,
    `create_signing_link` and `get_submission`. They need the **Read and write** access the user chose when they
    connected; `expire_submission` and `create_webhook` need **Full access**.
-2. **The REST API (v2) or a 4.x API client**, for app code: `https://sync.api.docspring.com/api/v2` (EU:
-   `https://sync.api-eu.docspring.com/api/v2`), HTTP Basic auth with an API token's ID and secret.
-3. **Neither:** load `docspring` for how to connect, or point the user to https://docspring.com/docs/mcp/.
+2. **The DocSpring CLI** (`docspring`), when you can run shell commands and it's installed: section 3's steps, with
+   `submissions create <template_id> --data @request.json`, `signature-requests tokens create <signature_request_id>`,
+   `signature-requests events create <signature_request_id> --data ...` and `submissions get <submission_id>`. Add
+   `--json`. The `docspring` skill covers logging in.
+3. **The REST API (v2) or a 4.x API client**, in app code, or when you can run code and the user has an API token:
+   `https://sync.api.docspring.com/api/v2` (EU: `https://sync.api-eu.docspring.com/api/v2`), HTTP Basic auth with the
+   token's ID and secret.
+4. **None of them:** load `docspring` for how to connect, or point the user to https://docspring.com/docs/mcp/ or
+   https://docspring.com/docs/cli/.
 
 ## 1. Check the template first
 
@@ -153,7 +159,7 @@ Nothing is saved. Show the user the error's message, or offer to send the links 
 What the tool doesn't do: it records every signer as authenticated by an emailed link (`auth_type: email_link`), and
 it can't record that the user sent the link or how the app signed the person in. For those, use the API.
 
-## 3. Create one from app code (API v2)
+## 3. Create one from app code or the CLI (API v2)
 
 1. `POST /templates/{template_id}/submissions` (`createSubmission` in the API clients) with `signature_requests`.
    Every signature request needs `fields`. DocSpring emails each signer their link unless `send_email` is `false`,

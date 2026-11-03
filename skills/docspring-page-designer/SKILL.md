@@ -3,7 +3,7 @@ name: docspring-page-designer
 description: Creates and changes DocSpring page designs, templates whose PDFs DocSpring lays out from a JSON layout of sections, text with fields, images, tables, form fields and codes, which the Page Designer also edits. Covers the layout format, repeating sections and tables, conditions, the fields DocSpring adds, previews and publishing. Use when the user wants a PDF designed from their data (an invoice, certificate or letter) without HTML or a Word document, or to change a page design, or when a project has template_type "page_designer" or a layout with sections. Not for HTML templates (docspring-html-templates), Word documents (docspring-word-templates), existing PDFs (docspring-pdf-templates) or app code (docspring-api-integration).
 license: MIT
 metadata:
-  version: '1.7.0'
+  version: '1.8.0'
   author: DocSpring
 ---
 
@@ -43,10 +43,13 @@ its JSON, so every change goes through the preview loop below.
 
 1. **The DocSpring MCP server** (`docspring` for US accounts, `docspring-eu` for EU), when its tools are available.
    Edits need read and write access.
-2. **The REST API v2**, when you can run code and the user has an API token: "REST equivalents" below maps each tool
-   to its endpoint. Page designs need API v2: API v1 and the 3.x API clients can't create them.
-3. **Neither:** ask the user to connect the MCP server (`https://docspring.com/docs/mcp/`) or create an API token.
-   The `docspring` skill covers connecting, regions, test and live documents, and errors.
+2. **The DocSpring CLI** (`docspring`), when you can run shell commands and it's installed: "REST and CLI
+   equivalents" below has the command for each tool. The `docspring` skill covers logging in, `--json` and exit codes.
+3. **The REST API v2**, when you can run code and the user has an API token: the same table maps each tool to its
+   endpoint. Page designs need API v2: API v1 and the 3.x API clients can't create them.
+4. **None of them:** ask the user to connect the MCP server (`https://docspring.com/docs/mcp/`), install the CLI
+   (`https://docspring.com/docs/cli/`) or create an API token. The `docspring` skill covers connecting, regions, test
+   and live documents, and errors.
 
 ## Creating a page design
 
@@ -318,22 +321,23 @@ Values the data sends: `date` fields take `YYYY-MM-DD`, and images `{"url": "htt
 For a before and after, render "before" with `version: "latest"`, which is what the user's documents look like now.
 A template that was never published has only its draft, so render "before" ahead of your first change.
 
-## REST equivalents
+## REST and CLI equivalents
 
 Send JSON to `https://sync.api.docspring.com/api/v2` (EU: `https://sync.api-eu.docspring.com/api/v2`) with HTTP Basic
-auth (the API token's ID and secret).
+auth (the API token's ID and secret). With the CLI, each step is a `docspring` command (add `--json`), and its
+`--data` is the REST request's body.
 
-| Step                   | MCP tool                            | REST                                                                                                                       |
-| ---------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Create                 | `create_page_design`                | `POST /templates` with `"template_type": "page_designer"`, `name` and `layout`                                             |
-| Read the template      | `get_template`                      | `GET /templates/{template_id}` (the draft by default, with its `layout`)                                                   |
-| Change the layout      | `update_page_design`                | `PUT /templates/{template_id}` with `{"layout": {...}}`                                                                    |
-| Fields and data schema | `get_fields`, `get_template_schema` | `GET /templates/{template_id}/fields`, `GET /templates/{template_id}/schema?version=draft`                                 |
-| Change fields          | `update_fields`, `remove_fields`    | `PUT /templates/{template_id}/fields`, `POST /templates/{template_id}/fields/remove`                                       |
-| Change settings        | `update_template`                   | `PUT /templates/{template_id}` with the settings as the body                                                               |
-| Preview                | `preview_template`                  | `POST /templates/{template_id}/previews` with `{"data": {...}}`, then `GET /templates/{template_id}/previews/{preview_id}` |
-| Test document          | `generate_pdf`                      | `POST /templates/{template_id}/submissions?version=draft` with `"test": true`                                              |
-| What changed, publish  | `diff_versions`, `publish_version`  | `GET /templates/{template_id}/diff`, `POST /templates/{template_id}/publish_version` with `{"version_type": "patch"}`      |
+| Step                   | MCP tool                            | CLI                                                                                                                   | REST                                                                                                                       |
+| ---------------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Create                 | `create_page_design`                | `templates create --data @design.json`                                                                                | `POST /templates` with `"template_type": "page_designer"`, `name` and `layout`                                             |
+| Read the template      | `get_template`                      | `templates get <template_id>`                                                                                         | `GET /templates/{template_id}` (the draft by default, with its `layout`)                                                   |
+| Change the layout      | `update_page_design`                | `templates update <template_id> --data @layout.json`                                                                  | `PUT /templates/{template_id}` with `{"layout": {...}}`                                                                    |
+| Fields and data schema | `get_fields`, `get_template_schema` | `templates fields list <template_id>`, `templates schema <template_id> --version draft`                               | `GET /templates/{template_id}/fields`, `GET /templates/{template_id}/schema?version=draft`                                 |
+| Change fields          | `update_fields`, `remove_fields`    | `templates fields update`, `templates fields remove`                                                                  | `PUT /templates/{template_id}/fields`, `POST /templates/{template_id}/fields/remove`                                       |
+| Change settings        | `update_template`                   | `templates update <template_id> --data @settings.json`                                                                | `PUT /templates/{template_id}` with the settings as the body                                                               |
+| Preview                | `preview_template`                  | `templates previews create <template_id> --data @data.json`, then `templates previews get <template_id> <preview_id>` | `POST /templates/{template_id}/previews` with `{"data": {...}}`, then `GET /templates/{template_id}/previews/{preview_id}` |
+| Test document          | `generate_pdf`                      | `submit <template_id> --version draft --test --data @data.json`                                                       | `POST /templates/{template_id}/submissions?version=draft` with `"test": true`                                              |
+| What changed, publish  | `diff_versions`, `publish_version`  | `templates diff <template_id>`, `templates publish <template_id> --data '{"version_type": "patch"}'`                  | `GET /templates/{template_id}/diff`, `POST /templates/{template_id}/publish_version` with `{"version_type": "patch"}`      |
 
 A preview is `pending` for a few seconds: get it every second or two until its `state` is `processed` (or `error`,
 with an `error_message`), then download each page from `pages[].download_url`. The links expire: get the preview

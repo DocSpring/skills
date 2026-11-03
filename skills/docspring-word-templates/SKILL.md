@@ -3,7 +3,7 @@ name: docspring-word-templates
 description: Creates and fixes DocSpring Word templates, Word documents (.docx) with Liquid tags that DocSpring fills in with submission data to make Word documents or PDFs. Covers tags (values, filters, conditions, loops over table rows, pictures, signatures, barcodes), the fields DocSpring adds from them, replacing the document, previews and output formats. Use when the user wants to turn a Word document into a DocSpring template, add or fix its tags, find out why a Word template's submission failed, or get Word documents or PDFs from one, or when a project has template_type "docx", output_format, tpl_ IDs or a docspring package. Not for Word files DocSpring doesn't fill in (use a general Word skill), HTML templates (docspring-html-templates), PDF templates (docspring-pdf-templates) or app code that calls the API (docspring-api-integration).
 license: MIT
 metadata:
-  version: '1.7.0'
+  version: '1.8.0'
   author: DocSpring
 ---
 
@@ -43,10 +43,13 @@ is. You can't tell how a filled-in document looks from its tags, so every change
 
 1. **The DocSpring MCP server** (`docspring` for US accounts, `docspring-eu` for EU), when its tools are available.
    Edits need read and write access.
-2. **The REST API v2**, when you can run code and the user has an API token: "REST equivalents" below maps each tool
-   to its endpoint. API v1 and the 3.x API clients only make PDFs from Word templates.
-3. **Neither:** ask the user to connect the MCP server (`https://docspring.com/docs/mcp/`) or create an API token.
-   The `docspring` skill covers connecting, regions, test and live documents, and errors.
+2. **The DocSpring CLI** (`docspring`), when you can run shell commands and it's installed: "REST and CLI
+   equivalents" below has the command for each tool. The `docspring` skill covers logging in, `--json` and exit codes.
+3. **The REST API v2**, when you can run code and the user has an API token: the same table maps each tool to its
+   endpoint. API v1 and the 3.x API clients only make PDFs from Word templates.
+4. **None of them:** ask the user to connect the MCP server (`https://docspring.com/docs/mcp/`), install the CLI
+   (`https://docspring.com/docs/cli/`) or create an API token. The `docspring` skill covers connecting, regions, test
+   and live documents, and errors.
 
 ## Creating a Word template
 
@@ -59,8 +62,9 @@ is. You can't tell how a filled-in document looks from its tags, so every change
 3. **Create the template.** `create_word_template` with the document and `output_format`: `docx` (each submission
    makes a Word document), `odt` (an OpenDocument file) or `pdf`. Ask the user which unless they've said: a submission
    can still ask for others.
-   - A file on disk: `create_pdf_upload`, run the `curl` command it returns with the file's path, then pass its
-     `cache_id` and the `filename`.
+   - A file on disk: with the CLI, `docspring templates upload <file> --name "<name>" --output-format docx --json`
+     (the .docx or .odt makes it a Word template). Otherwise `create_pdf_upload`, run the `curl` command it returns
+     with the file's path, then pass its `cache_id` and the `filename`.
    - A file on the web: `document_url`.
    - `document_base64` only for a small file you can't upload.
 
@@ -194,9 +198,10 @@ documents there.
 
 ## Changing a Word template's document
 
-1. **Get the current document.** Over the REST API, download the `document.permanent_url` from
-   `GET /templates/{template_id}`. The link works without the API token, so keep it out of code and logs. The MCP
-   tools don't return the document: ask the user to send you the template's .docx.
+1. **Get the current document.** Over the REST API or the CLI, download the `document.permanent_url` from
+   `GET /templates/{template_id}` (`docspring templates get <template_id> --json`). The link works without the API
+   token, so keep it out of code and logs. The MCP tools don't return the document: ask the user to send you the
+   template's .docx.
 2. **Edit only what needs to change**, so the rest of the document keeps its formatting.
 3. **Replace it.** `replace_template_pdf` with the whole new document (`cache_id` from `create_pdf_upload`,
    `document_url` or `document_base64`, and `filename`). `reimport_fields` is for PDF templates: leave it out. New
@@ -235,25 +240,26 @@ template editor renames both. To rename a value yourself, such as `client_name` 
 - Word documents and OpenDocument files can't be password-protected: a template that encrypts its PDFs makes PDFs,
   and a submission with a `password` can't ask for either.
 
-## REST equivalents
+## REST and CLI equivalents
 
 Send JSON to `https://sync.api.docspring.com/api/v2` (EU: `https://sync.api-eu.docspring.com/api/v2`) with HTTP Basic
-auth (the API token's ID and secret).
+auth (the API token's ID and secret). CLI commands start with `docspring` (add `--json`), and their `--data` is the
+REST request's body.
 
-| Step                   | MCP tool                            | REST                                                                                                                       |
-| ---------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Upload a file          | `create_pdf_upload`                 | `GET /uploads/presign`, then POST its `fields` and the file (as `file`, last) to its `url`                                 |
-| Create                 | `create_word_template`              | `POST /templates` with `"template_type": "docx"`, `output_format` and `cache_id`, `document_url` or `document_base64`      |
-| Create from a file     |                                     | `POST /templates/upload` (multipart, the .docx as `document`, with `output_format`)                                        |
-| Read the template      | `get_template`                      | `GET /templates/{template_id}` (the draft by default; `document.permanent_url` downloads its .docx)                        |
-| Fields and data schema | `get_fields`, `get_template_schema` | `GET /templates/{template_id}/fields`, `GET /templates/{template_id}/schema?version=draft`                                 |
-| Change fields          | `update_fields`, `remove_fields`    | `PUT /templates/{template_id}/fields`, `POST /templates/{template_id}/fields/remove`                                       |
-| Replace the document   | `replace_template_pdf`              | `PUT /templates/{template_id}/document` with `cache_id`, `document_url` or `document_base64`                               |
-| Change settings        | `update_template`                   | `PUT /templates/{template_id}` with the settings as the body                                                               |
-| Preview                | `preview_template`                  | `POST /templates/{template_id}/previews` with `{"data": {...}}`, then `GET /templates/{template_id}/previews/{preview_id}` |
-| Test document          | `generate_pdf`                      | `POST /templates/{template_id}/submissions?version=draft` with `"test": true` and `output_formats`                         |
-| The other format later | `generate_submission_files`         | `POST /submissions/{submission_id}/generate_files` with `{"formats": ["pdf"]}`                                             |
-| What changed, publish  | `diff_versions`, `publish_version`  | `GET /templates/{template_id}/diff`, `POST /templates/{template_id}/publish_version` with `{"version_type": "patch"}`      |
+| Step                   | MCP tool                            | CLI                                                                              | REST                                                                                                                       |
+| ---------------------- | ----------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Upload a file          | `create_pdf_upload`                 | `uploads presign` (`templates upload` doesn't need it)                           | `GET /uploads/presign`, then POST its `fields` and the file (as `file`, last) to its `url`                                 |
+| Create                 | `create_word_template`              | `templates create --data @template.json`                                         | `POST /templates` with `"template_type": "docx"`, `output_format` and `cache_id`, `document_url` or `document_base64`      |
+| Create from a file     |                                     | `templates upload <file> --output-format docx`                                   | `POST /templates/upload` (multipart, the .docx as `document`, with `output_format`)                                        |
+| Read the template      | `get_template`                      | `templates get <template_id>`                                                    | `GET /templates/{template_id}` (the draft by default; `document.permanent_url` downloads its .docx)                        |
+| Fields and data schema | `get_fields`, `get_template_schema` | `templates fields list`, `templates schema --version draft`                      | `GET /templates/{template_id}/fields`, `GET /templates/{template_id}/schema?version=draft`                                 |
+| Change fields          | `update_fields`, `remove_fields`    | `templates fields update`, `templates fields remove`                             | `PUT /templates/{template_id}/fields`, `POST /templates/{template_id}/fields/remove`                                       |
+| Replace the document   | `replace_template_pdf`              | `templates update-document`, or `templates upload-document <template_id> <file>` | `PUT /templates/{template_id}/document` with `cache_id`, `document_url` or `document_base64`                               |
+| Change settings        | `update_template`                   | `templates update`                                                               | `PUT /templates/{template_id}` with the settings as the body                                                               |
+| Preview                | `preview_template`                  | `templates previews create`, then `templates previews get`                       | `POST /templates/{template_id}/previews` with `{"data": {...}}`, then `GET /templates/{template_id}/previews/{preview_id}` |
+| Test document          | `generate_pdf`                      | `submit <template_id> --version draft --test --format docx`                      | `POST /templates/{template_id}/submissions?version=draft` with `"test": true` and `output_formats`                         |
+| The other format later | `generate_submission_files`         | `submissions generate-files <submission_id> --data '{"formats": ["pdf"]}'`       | `POST /submissions/{submission_id}/generate_files` with `{"formats": ["pdf"]}`                                             |
+| What changed, publish  | `diff_versions`, `publish_version`  | `templates diff`, `templates publish`                                            | `GET /templates/{template_id}/diff`, `POST /templates/{template_id}/publish_version` with `{"version_type": "patch"}`      |
 
 A preview is `pending` for a few seconds: get it every second or two until its `state` is `processed` (or `error`,
 with an `error_message`), then download each page from `pages[].download_url`. The links expire: get the preview
