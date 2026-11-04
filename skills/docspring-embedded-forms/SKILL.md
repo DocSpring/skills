@@ -1,9 +1,9 @@
 ---
 name: docspring-embedded-forms
-description: Puts DocSpring forms and the template editor in a browser. Sets up hosted form links, embedded web forms (DocSpring.createSimpleForm) and visual forms (DocSpring.createVisualForm) with prefill, hidden fields, callbacks, redirects and the public template settings they need, and embeds the template editor (DocSpring.createTemplateEditor, embed_edit_token). Use when the user wants people to fill in a DocSpring template on their site or from a link, wants their own users to edit templates in their product, or has code loading simple_form, visual_form or template_editor from cdn.docspring.com. Not for e-signatures or embedded signing (docspring-signature-requests), server-side PDF generation or webhooks (docspring-api-integration), or other form builders.
+description: Puts DocSpring forms and the template editor in a browser. Sets up hosted form links, embedded web forms (DocSpring.createWebForm) and visual forms (DocSpring.createVisualForm) with prefill, hidden fields, callbacks, redirects, styling and the public template settings they need, upgrades Web Forms JS 2.x (createSimpleForm), and embeds the template editor (DocSpring.createTemplateEditor, embed_edit_token). Use when the user wants people to fill in a DocSpring template on their site or from a link, wants their own users to edit templates in their product, or has code loading web_form, simple_form, visual_form or template_editor from cdn.docspring.com. Not for e-signatures or embedded signing (docspring-signature-requests), server-side PDF generation or webhooks (docspring-api-integration), or other form builders.
 license: MIT
 metadata:
-  version: '1.8.0'
+  version: '1.9.0'
   author: DocSpring
 ---
 
@@ -78,6 +78,11 @@ JavaScript libraries, and its server uses an API token.
 - **Redirect URL** (`redirect_url`): where people go after submitting, with `submission_id`, `template_id` and
   `template_name` added. The `redirectURL` option overrides it, but `redirectURL: null` doesn't clear it: to handle
   success in JavaScript, leave the template's redirect URL blank.
+- **Success screen** (`success_title`, `success_message`, `show_fill_again_button`): what the web form shows in its
+  place once it's submitted: the title ("Thanks for filling out" and the template's name when it's blank), the
+  message as plain text, a Download PDF button when Submission Privacy is public, and a Fill out again button (on by
+  default). A form that redirects shows no success screen. The web form's `successTitle`, `successMessage` and
+  `showFillAgainButton` options override these, and `showSuccessScreen: false` keeps the form on the page instead.
 - **Online Form** (`default_form_mode`): what the hosted link shows, `web`, `visual` or `dual` (both, in tabs).
 - A template without named fields has no form: it says "This template has no named fields".
 - Signature requests don't need any of these: their links work on a private template.
@@ -104,7 +109,7 @@ Links end up in browser history and logs, so keep personal data out of links tha
 
 ## Library URLs and versions
 
-- Web Forms JS, `DocSpring.createSimpleForm`: `https://cdn.docspring.com/embed/simple_form.v<VERSION>.css` and `.js`
+- Web Forms JS, `DocSpring.createWebForm`: `https://cdn.docspring.com/embed/web_form.v<VERSION>.css` and `.js`
 - Visual Forms JS, `DocSpring.createVisualForm`: `https://cdn.docspring.com/visual_form.v<VERSION>.css` and `.js`
   (no `/embed/`)
 - Template editor, `DocSpring.createTemplateEditor`: `https://cdn.docspring.com/embed/template_editor.v<VERSION>.js`
@@ -118,21 +123,26 @@ it, ask the user to copy the tags from the page:
 - https://docspring.com/docs/guides/embedded-template-editor.md
 
 A published version never changes. When a project already loads one, keep it unless the user asks to upgrade, and read
-the changelog first (https://docspring.com/docs/changelogs/visual-forms-js/, `simple-forms-js`, `template-editor-js`).
-Enterprise installs serve the same files from their own host under `/assets/embed/`.
+the changelog first (https://docspring.com/docs/changelogs/visual-forms-js/, `web-forms-js`, `template-editor-js`).
+Enterprise installs serve the same files from their own host under `/assets/embed/` (`web_form.js`, `web_form.css`).
+
+**Web Forms JS 2.x** is `embed/simple_form.v2.*` with `DocSpring.createSimpleForm`. Those pages keep working. To
+upgrade one, follow "Upgrading from 2.x" in https://docspring.com/docs/changelogs/web-forms-js.md: new URLs, rename
+the call to `createWebForm` (3.x's `createSimpleForm` only throws an error), rewrite `onError` for the new error
+objects, and move CSS that targets `.alpaca-*` classes to the `--dsp-*` custom properties.
 
 ## Embedded web form
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.docspring.com/embed/simple_form.v<VERSION>.css"
+  href="https://cdn.docspring.com/embed/web_form.v<VERSION>.css"
 />
-<script src="https://cdn.docspring.com/embed/simple_form.v<VERSION>.js"></script>
+<script src="https://cdn.docspring.com/embed/web_form.v<VERSION>.js"></script>
 
 <div class="dsp-form"></div>
 <script>
-  DocSpring.createSimpleForm('.dsp-form', 'tpl_...', {
+  DocSpring.createWebForm('.dsp-form', 'tpl_...', {
     defaultData: { customer: { name: 'Jane Smith' } },
     metadata: { source: 'pricing-page' },
     processTemplateSchema: function (schema) {
@@ -145,21 +155,26 @@ Enterprise installs serve the same files from their own host under `/assets/embe
     onSave: function (submission) {
       // Send submission.id to your server, which fetches the submission with the API
     },
-    onError: function (response) {
-      console.error(response)
+    onError: function (error) {
+      console.error(error.error, error.message)
     },
   })
 </script>
 ```
 
-- Keep the class `dsp-form` on the container: the stylesheet only styles what is inside `.dsp-form`.
+- The form replaces what's inside the container and draws its own `.dsp-web-form` element there. `createWebForm`
+  throws when nothing matches the selector, so call it after the container exists.
+- Restyle it with the `--dsp-*` CSS custom properties on `.dsp-web-form`, or the `theme` option, and `darkMode: true`
+  or `'auto'` for its dark theme (`references/web-forms-js.md`). Don't override its internal rules.
 - EU accounts: set `DocSpring.appHost = 'app-eu.docspring.com'` (a bare host) before the call. There's no `region`
   option.
 - `defaultData` is nested JSON: the field `person/name` is `{ person: { name: '...' } }`.
 - Only `processTemplateSchema` hides fields in an embed. Fields in an object are under
   `schema.properties.<object>.properties`.
-- `onSubmit(formData)` runs before the form saves. Return `false` to cancel, then post the data to the user's server,
-  which can validate it and create the submission or a signature request.
+- `onSubmit(formData)` runs once the form's own checks pass, before it saves. Return `false` to cancel, then post the
+  data to the user's server, which can validate it and create the submission or a signature request.
+- Sections belong to the template, not the page: **Sections** in the template editor (`x-form-sections` in the
+  schema). The form then shows one section at a time with Next and Back.
 
 Every option and callback: `references/web-forms-js.md`.
 
@@ -206,7 +221,7 @@ Every option, string option, callback and function: `references/visual-forms-js.
 | `onSubmit`    | `(formData)`; return `false` to cancel                  | `(formData)`; can't cancel        |
 | `onSave`      | `(submission)`, with `submission.id`                    | `(submissionId)`                  |
 | `onProcessed` | `(submission)`, with `id`, `download_url`, `expires_at` | `({ submissionId, downloadURL })` |
-| `onError`     | the AJAX response, or an object with an `error` code    | `(error)`                         |
+| `onError`     | `{ error, message, status, errors }`                    | `(error)`                         |
 
 How a form submission becomes a PDF:
 
@@ -218,7 +233,8 @@ How a form submission becomes a PDF:
 4. With Submission Privacy public, the form polls until the PDF is ready, calls `onProcessed`, and redirects one second
    later if there is a redirect URL. The web form stops after 60 seconds (`submission_timeout`). With Submission
    Privacy private, the form redirects as soon as it saves and never calls `onProcessed`. The web form's
-   `waitForPDF: false` does the same; the visual form's only changes the message it shows.
+   `waitForPDF: false` does the same; the visual form's only changes the message it shows. Without a redirect URL,
+   the web form shows its success screen as soon as it saves.
 5. The user's server gets the PDF from a webhook (`submission.processed`) or `GET /submissions/{submission_id}` with an
    API token (`docspring-api-integration`). A submission ID from the browser or the redirect URL is only a claim: fetch
    the submission and check its `template_id` and `state` before acting on it.
@@ -291,21 +307,23 @@ Every option, event, feature switch and predefined field property: `references/t
   React, Vue or Svelte, add the script once and call it from an effect (Next.js: `<Script onLoad>` in a client
   component). Guard against a second call (React StrictMode runs effects twice in development). The forms have no
   function to remove them, so don't let the framework re-render the container's children.
-- **jQuery.** Web Forms JS and the template editor script bundle their own jQuery and set the page's global `jQuery`
-  and `$` to it when they load (Visual Forms JS leaves them alone). On a page that uses jQuery plugins, check that the
-  page's own jQuery code still works with the script added.
+- **jQuery.** The template editor script and Web Forms JS 2.x bundle their own jQuery and set the page's global
+  `jQuery` and `$` to it when they load (Visual Forms JS and Web Forms JS 3.x leave them alone). On a page that uses
+  jQuery plugins, check that the page's own jQuery code still works with the script added.
 - **One library per page.** Visual Forms JS and Signature Requests JS define the same functions on `window.DocSpring`
   (`clearForm`, `focusField` and others). Don't load both on one page, or in one single-page app.
 - **A page inside an iframe.** In a framed page, Visual Forms JS waits for its options from the parent window, as it
   does inside DocSpring's own signing iframe, so the form never appears. Call `createVisualForm` on a top-level page,
   or link to the hosted form.
-- **Saved progress beats prefill.** Both forms keep what people type in `localStorage`, under the template ID, until
-  the form is submitted or cleared, and restore it instead of `defaultData` or `defaultFormData`. When one browser
-  fills a template for different records (staff working through a list), run `localStorage.removeItem('tpl_...')`
-  before creating the form.
+- **Saved progress beats prefill.** Both forms keep what people type in `localStorage` until the form is submitted or
+  cleared, and restore it instead of `defaultData` or `defaultFormData`: the web form under
+  `docspring-web-form:<template ID>`, the visual form under the template ID. When one browser fills a template for
+  different records (staff working through a list), remove that key before creating the form
+  (`localStorage.removeItem('docspring-web-form:tpl_...')` for the web form).
 - **Content Security Policy.** Allow, for US accounts (EU: `app-eu.docspring.com` and `api-eu.docspring.com`):
   - `script-src https://cdn.docspring.com`
-  - `style-src https://cdn.docspring.com https://fonts.googleapis.com` (both forms' stylesheets import Google Fonts)
+  - `style-src https://cdn.docspring.com https://fonts.googleapis.com` (the visual form's stylesheet imports Google
+    Fonts)
   - `font-src https://cdn.docspring.com https://fonts.gstatic.com`
   - `connect-src https://app.docspring.com https://api.docspring.com`
   - `img-src https://cdn.docspring.com https://app.docspring.com data:`, plus the storage host that page images
@@ -313,8 +331,9 @@ Every option, event, feature switch and predefined field property: `references/t
   - `frame-src https://app.docspring.com` for signature requests and the template editor
 
   No library needs `'unsafe-inline'` in `script-src` or `style-src` (Signature Requests JS 3.0.1, Template Editor JS
-  0.1.3, Visual Forms JS 2.19.0 and above). Web Forms JS still renders style attributes (the date picker): add
-  `style-src-attr 'unsafe-inline'` for it. The browser console names any other blocked host. Details:
+  0.1.3, Visual Forms JS 2.19.0 and Web Forms JS 3.0.0 and above). Web Forms JS 2.x renders style attributes (the date
+  picker): add `style-src-attr 'unsafe-inline'` for it, or upgrade it. The browser console names any other blocked
+  host. Details:
   https://docspring.com/docs/forms/js-libraries/content-security-policy/
 
 - **Mobile Safari.** Add `<meta name="viewport" content="width=device-width, initial-scale=1">`. Don't put the visual
@@ -330,8 +349,10 @@ Every option, event, feature switch and predefined field property: `references/t
   draft.
 - `onProcessed` never runs: Submission Privacy is private, or the web form has `waitForPDF: false`.
 - Prefilled values ignored: saved `localStorage` values, or names and nesting that don't match `get_template_schema`.
-- Nothing appears and no error: the script hadn't loaded, the container didn't exist yet, the page is in an iframe, or
-  CSP blocked a request.
+- Nothing appears and no error: the script hadn't loaded, the visual form's container didn't exist yet, the page is
+  in an iframe, or CSP blocked a request. (The web form throws an error when its container doesn't exist.)
+- `DocSpring.createSimpleForm was renamed to DocSpring.createWebForm`: the page loads Web Forms JS 3.x but calls the
+  2.x function. Finish the upgrade ("Library URLs and versions").
 - Editor "cannot be embedded on this domain": add the page's host to Embed Domains. "Could not verify the website":
   the page sends no `Referer` or `Origin`. `onError` with "Template is locked": unlock it (`locked: false`).
 

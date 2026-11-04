@@ -3,7 +3,7 @@ name: docspring-pdf-templates
 description: Turns a user's PDF form into a working DocSpring PDF template. Creates it from a link or file, detects or imports its fields, checks them against page images, fixes names, types, positions, checkboxes and signature fields, test-fills the draft and publishes a version. Use when the user wants to make a PDF fillable with DocSpring, set up or fix a template's fields, replace a template's PDF, copy or move templates, or compare, publish or restore template versions, or when a project uses DocSpring (a docspring package, tpl_ template IDs, sync.api.docspring.com). Not for HTML templates, app code that generates PDFs or sending documents for signature (other DocSpring skills), or for filling or editing a PDF on disk without DocSpring.
 license: MIT
 metadata:
-  version: '1.8.0'
+  version: '1.9.0'
   author: DocSpring
 ---
 
@@ -72,7 +72,9 @@ Then decide on `detect_fields` (default `false`):
   (a `.` becomes `/`, so `form1.name` becomes the nested key `form1/name`). A flat PDF gets no fields. No AI.
 - `true`: DocSpring imports a fillable PDF's form fields or detects the fields on a flat PDF, names them and sets
   their types and settings with AI, then (unless the account's template settings turn it off) reads the whole form
-  and adds conditional logic, required fields and formulas. It uses the account's free AI pages for the month, then
+  and adds conditional logic, required fields and formulas. AI leaves out the fields that only the office receiving
+  the form fills in (a "For office use only" box, a received stamp): pass `include_office_use_fields: true`
+  only for a template the receiving office fills in itself. It uses the account's free AI pages for the month, then
   credits for each page ([AI field setup pricing](https://docspring.com/docs/billing/how-credits-work/)). Tell the
   user before you run it on a long PDF.
 

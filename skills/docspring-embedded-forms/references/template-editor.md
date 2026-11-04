@@ -76,6 +76,7 @@ Pass `features: { ... }` to show or hide controls. These are cosmetic: see Capab
 | `showVersions`               | `true`  | Version publishing, restore and delete. Needs `embed_edit_allow_versioning`. |
 | `allowPdfReplacement`        | `true`  | Uploading a new PDF. Needs `embed_edit_allow_document_replacement`.          |
 | `showSchema`                 | `true`  | The JSON schema button                                                       |
+| `showFormSections`           | `true`  | The Sections button (the web form's sections)                                |
 | `showCode`                   | `false` | The Code button (model code for the template's data)                         |
 | `showFormLinks`              | `true`  | Links to the hosted form pages                                               |
 | `showHelp`                   | `true`  | The help link                                                                |
@@ -102,7 +103,7 @@ Pass `features: { ... }` to show or hide controls. These are cosmetic: see Capab
 | `showFieldCombOptions`       | `true`  | Comb fields                                                                  |
 | `showFieldColorFromData`     | `true`  | Colors from submitted data                                                   |
 
-`simplifyUI: true` sets these to `false`: `showSchema`, `showCode`, `showFormLinks`, `showHelp`, `showInvert`,
+`simplifyUI: true` sets these to `false`: `showSchema`, `showFormSections`, `showCode`, `showFormLinks`, `showHelp`, `showInvert`,
 `showWelcomeModal` and every `showField...` switch except `showFieldDataType` and `showFieldRequired`. Other switches in
 the same object override it, such as `{ simplifyUI: true, showFieldRotation: true }`.
 
