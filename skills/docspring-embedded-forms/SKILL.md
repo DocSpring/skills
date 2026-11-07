@@ -3,7 +3,7 @@ name: docspring-embedded-forms
 description: Puts DocSpring forms and the template editor in a browser. Sets up hosted form links, embedded web forms (DocSpring.createWebForm) and visual forms (DocSpring.createVisualForm) with prefill, hidden fields, callbacks, redirects, styling and the public template settings they need, upgrades Web Forms JS 2.x (createSimpleForm), and embeds the template editor (DocSpring.createTemplateEditor, embed_edit_token). Use when the user wants people to fill in a DocSpring template on their site or from a link, wants their own users to edit templates in their product, or has code loading web_form, simple_form, visual_form or template_editor from cdn.docspring.com. Not for e-signatures or embedded signing (docspring-signature-requests), server-side PDF generation or webhooks (docspring-api-integration), or other form builders.
 license: MIT
 metadata:
-  version: '1.9.0'
+  version: '1.9.1'
   author: DocSpring
 ---
 
@@ -174,7 +174,8 @@ objects, and move CSS that targets `.alpaca-*` classes to the `--dsp-*` custom p
 - `onSubmit(formData)` runs once the form's own checks pass, before it saves. Return `false` to cancel, then post the
   data to the user's server, which can validate it and create the submission or a signature request.
 - Sections belong to the template, not the page: **Sections** in the template editor (`x-form-sections` in the
-  schema). The form then shows one section at a time with Next and Back.
+  schema). The form then shows one section at a time with Next and Back, and people can open any section from its list
+  unless the template's **Fill out sections in order** setting (or the `sectionsInOrder` option) is on.
 
 Every option and callback: `references/web-forms-js.md`.
 
