@@ -3,7 +3,7 @@ name: docspring-embedded-forms
 description: Puts DocSpring forms and the template editor in a browser. Sets up hosted form links, embedded web forms (DocSpring.createWebForm) and visual forms (DocSpring.createVisualForm) with prefill, hidden fields, callbacks, redirects, styling and the public template settings they need, upgrades Web Forms JS 2.x (createSimpleForm), and embeds the template editor (DocSpring.createTemplateEditor, embed_edit_token). Use when the user wants people to fill in a DocSpring template on their site or from a link, wants their own users to edit templates in their product, or has code loading web_form, simple_form, visual_form or template_editor from cdn.docspring.com. Not for e-signatures or embedded signing (docspring-signature-requests), server-side PDF generation or webhooks (docspring-api-integration), or other form builders.
 license: MIT
 metadata:
-  version: '1.9.1'
+  version: '1.9.2'
   author: DocSpring
 ---
 
@@ -210,6 +210,10 @@ Every option and callback: `references/web-forms-js.md`.
 - EU accounts: pass `region: 'EU'`. Don't set `DocSpring.appHost` for it: that moves only the template requests, and
   submissions still go to the US API.
 - From the browser, a submission keeps only the `hidden`, `required` and `backgroundColor` field overrides.
+- **Embed Domains**: when the template's `embed_domains` isn't empty, the form loads only on those sites (the same
+  entries as the editor's, below). Elsewhere it shows a message naming the host to add, and `onError` gets
+  `{ error: 'embed_domain_not_allowed', message }`. Add every site that shows the form; `domainVerification: false`
+  turns the check off for local development. The check runs in the browser, so it doesn't make a form private.
 - The page can drive the form with `DocSpring.submitForm()`, `clearForm()`, `setField(name, value)`, `getFormData()`
   and `setFormData(data)`. The form is always light, whatever the page's theme.
 
@@ -283,8 +287,9 @@ the Developer plan the editor shows an error and its requests return 403 with `"
 - **Embed Domains** (`embed_domains`: `app.example.com`, `*.example.com`, `localhost:3000`) limits the sites that can
   load the editor. Empty allows every site, so set it for production. The check reads the page's `Referer` or `Origin`
   header, so a page with `Referrer-Policy: no-referrer` can't load the editor once it's set. The token, not Embed
-  Domains, protects the editor's API calls. The same setting limits where the template's live signature requests can
-  be embedded, and for those an empty list means no site (`docspring-signature-requests`).
+  Domains, protects the editor's API calls. The same setting limits where the template's visual form loads, and where
+  its live signature requests can be embedded, for which an empty list means no site (`docspring-signature-requests`):
+  list every site that embeds the template.
 - **It edits the draft.** Once the template has a published version, submissions keep using the latest one until the
   next publish (until the first publish, they use the draft). Unless the template allows versioning in the embed, the
   user's server publishes (`publish_version`, `POST /templates/{template_id}/publish_version`) when the app decides
@@ -356,6 +361,8 @@ Every option, event, feature switch and predefined field property: `references/t
   2.x function. Finish the upgrade ("Library URLs and versions").
 - Editor "cannot be embedded on this domain": add the page's host to Embed Domains. "Could not verify the website":
   the page sends no `Referer` or `Origin`. `onError` with "Template is locked": unlock it (`locked: false`).
+- Visual form says "Please add "<host>" to your template's Embed Domains" (`embed_domain_not_allowed`): add that host
+  to `embed_domains`, or pass `domainVerification: false` while developing.
 
 ## Reference files
 

@@ -126,8 +126,9 @@ Prints the template's ID (`tpl_...`), name, version and when it was published. A
 - `pluralize` prints only the word, not the count.
 - `in_time_zone` takes `"now"`, `"today"`, or a date or time. Give times an offset (`2026-05-01T09:00:00Z`): a time
   without one is read in the account's time zone (templates created before 29 October 2026: US Eastern), and a date
-  on its own can shift to the day before. An unknown zone name is ignored. Zone names are the IANA ones
-  (`America/New_York`):
+  on its own can shift to the day before. An unknown zone name fails the document with an error that names the zone,
+  so check the spelling; a blank one leaves the time in the account's time zone. Zone names are the IANA ones
+  (`America/New_York`), or the names in the account settings (`Eastern Time (US & Canada)`):
   `https://docspring.com/docs/html-templates/liquid-timezones/`.
 
 More examples: `https://docspring.com/docs/html-templates/liquid-filters/`.
