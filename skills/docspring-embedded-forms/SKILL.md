@@ -3,7 +3,7 @@ name: docspring-embedded-forms
 description: Puts DocSpring forms and the template editor in a browser. Sets up hosted form links, embedded web forms (DocSpring.createWebForm) and visual forms (DocSpring.createVisualForm) with prefill, hidden fields, callbacks, redirects, styling and the public template settings they need, upgrades Web Forms JS 2.x (createSimpleForm), and embeds the template editor (DocSpring.createTemplateEditor, embed_edit_token). Use when the user wants people to fill in a DocSpring template on their site or from a link, wants their own users to edit templates in their product, or has code loading web_form, simple_form, visual_form or template_editor from cdn.docspring.com. Not for e-signatures or embedded signing (docspring-signature-requests), server-side PDF generation or webhooks (docspring-api-integration), or other form builders.
 license: MIT
 metadata:
-  version: '1.9.2'
+  version: '1.10.0'
   author: DocSpring
 ---
 

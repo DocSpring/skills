@@ -80,34 +80,41 @@ for every field with the name. A field added with an existing name takes them: `
 shared setting to another value, so leave them out when you add a copy.
 
 `type`, `required` (default `true`), `default`, `title`, `description`, `placeholder`, `metadata`, `option_list`,
-`static`, `editable`, `dependencies`, `integer`, `minimum`, `maximum`, `exclusive_minimum`, `exclusive_maximum`,
-`include_time`, `combined_field_names`, `combined_field_type`, `combined_field_separator`, `combined_field_format`,
-`signature_allow_draw`, `signature_allow_type`, `barcode_symbology`.
+`option_labels`, `print_option_labels`, `static`, `editable`, `dependencies`, `integer`, `minimum`, `maximum`,
+`exclusive_minimum`, `exclusive_maximum`, `include_time`, `combined_field_names`, `combined_field_type`,
+`combined_field_separator`, `combined_field_format`, `signature_allow_draw`, `signature_allow_type`,
+`barcode_symbology`, `comb_fill_from_right`, `comb_pad_with_zeros`, `print_digits_only`.
 
 Everything else belongs to one field on one page, so one value can print differently in two places: the position and
-size, `display_type`, `hidden`, the text style, `date_time_format`, `decimal_places`, `currency`, `min_length`,
+size, `display_type`, `hidden`, the text style, `date_time_format`, `decimal_places`, `number_part`, `currency`,
+`min_length`,
 `max_length`, the check, shape, image and QR code settings, and `condition` with its comparison settings.
 
-| Setting                                                                   | What it does                                                                                                                             |
-| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `required`                                                                | Each submission must send a value. New fields are required unless you send `false`.                                                      |
-| `default`                                                                 | Used when the data leaves the field out, and fills in forms. A number field's can be a formula; a static field's is what it prints.      |
-| `title`                                                                   | The label in the data schema and on forms. Empty: made from the name.                                                                    |
-| `description`                                                             | Help text in the data schema and on forms.                                                                                               |
-| `placeholder`                                                             | Placeholder text on forms.                                                                                                               |
-| `metadata`                                                                | Your own text, in the data schema as `x-metadata`.                                                                                       |
-| `option_list`                                                             | `string` only: comma-separated accepted values. An `enum` in the data schema, a select list on forms.                                    |
-| `static`                                                                  | Prints its `default` on every PDF, and leaves the field out of the data schema and forms.                                                |
-| `hidden`                                                                  | Doesn't print, but stays in the data (`x-hidden`), so combined fields and rules can use it.                                              |
-| `editable`                                                                | Text and check display: prints a fillable PDF form field instead of flat content.                                                        |
-| `integer`, `minimum`, `maximum`, `exclusive_minimum`, `exclusive_maximum` | `number` validation.                                                                                                                     |
-| `decimal_places`                                                          | `number` with text display: 0 to 99 decimal places. Empty prints the number as sent.                                                     |
-| `currency`                                                                | `number`: a currency input on forms. It doesn't change how the number prints.                                                            |
-| `include_time`                                                            | `date`: the value is a date and time.                                                                                                    |
-| `date_time_format`                                                        | `date`: a strftime format (`%m/%d/%Y`, `%-d %B %Y`), or `@years_since` and the other `@` calculations. Empty uses the template's format. |
-| `min_length`, `max_length`                                                | Text display: length limits added to the data schema.                                                                                    |
-| `barcode_symbology`                                                       | `code_25`, `code_39`, `code_93`, `code_128`, `ean_13`, `ean_8`, `upc_a` or `pdf417`.                                                     |
-| `signature_allow_draw`, `signature_allow_type`                            | `signature` and `initials`: let signers draw, or type their name in a script font.                                                       |
+| Setting                                                                   | What it does                                                                                                                                                                                      |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `required`                                                                | Each submission must send a value. New fields are required unless you send `false`.                                                                                                               |
+| `default`                                                                 | Used when the data leaves the field out, and fills in forms. A number field's can be a formula; a static field's is what it prints.                                                               |
+| `title`                                                                   | The label in the data schema and on forms. Empty: made from the name.                                                                                                                             |
+| `description`                                                             | Help text in the data schema and on forms.                                                                                                                                                        |
+| `placeholder`                                                             | Placeholder text on forms.                                                                                                                                                                        |
+| `metadata`                                                                | Your own text, in the data schema as `x-metadata`.                                                                                                                                                |
+| `option_list`                                                             | `string` only: comma-separated accepted values. An `enum` in the data schema, a select list on forms.                                                                                             |
+| `option_labels`                                                           | With `option_list`: the label forms show for each option, keyed by the option (`{"c_corp": "C Corporation"}`). The data keeps the option. Each key must be one of the options.                    |
+| `print_option_labels`                                                     | Text display, with `option_labels`: the PDF prints the chosen option's label instead of the option.                                                                                               |
+| `static`                                                                  | Prints its `default` on every PDF, and leaves the field out of the data schema and forms.                                                                                                         |
+| `hidden`                                                                  | Doesn't print, but stays in the data (`x-hidden`), so combined fields and rules can use it.                                                                                                       |
+| `editable`                                                                | Text and check display: prints a fillable PDF form field instead of flat content.                                                                                                                 |
+| `integer`, `minimum`, `maximum`, `exclusive_minimum`, `exclusive_maximum` | `number` validation.                                                                                                                                                                              |
+| `decimal_places`                                                          | `number` with text display: 0 to 99 decimal places. Empty prints the number as sent.                                                                                                              |
+| `number_part`                                                             | `number` with text display: `all` (the whole number), `whole` (before the decimal point) or `decimals` (after it), for an amount with a field for its dollars and one for its cents.              |
+| `currency`                                                                | `number`: a currency input on forms. It doesn't change how the number prints.                                                                                                                     |
+| `include_time`                                                            | `date`: the value is a date and time.                                                                                                                                                             |
+| `date_time_format`                                                        | `date`: a strftime format (`%m/%d/%Y`, `%-d %B %Y`), or `@years_since` and the other `@` calculations. Empty uses the template's format.                                                          |
+| `min_length`, `max_length`                                                | Text display: length limits added to the data schema.                                                                                                                                             |
+| `barcode_symbology`                                                       | `code_25`, `code_39`, `code_93`, `code_128`, `ean_13`, `ean_8`, `upc_a` or `pdf417`.                                                                                                              |
+| `signature_allow_draw`, `signature_allow_type`                            | `signature` and `initials`: let signers draw, or type their name in a script font.                                                                                                                |
+| `comb_fill_from_right`, `comb_pad_with_zeros`                             | With `comb`: the value fills the last boxes, padded on the left with spaces (or zeros), as amounts are written. A number with `decimal_places` lines up on its decimal point, which takes no box. |
+| `print_digits_only`                                                       | With `comb`, strings only: only the digits print and any punctuation is left out, so `"123-45-6789"` fills 9 boxes. The data schema rejects letters.                                              |
 
 ## 4. Settings by display type
 
@@ -124,7 +131,7 @@ size, `display_type`, `hidden`, the text style, `date_time_format`, `decimal_pla
 | `v_alignment`                        | `bottom` (default), `center`, `top`.                                                                                                                                                                                                                                                                  |
 | `overflow`                           | `shrink_to_fit` (default, down to 5 points) or `truncate` (the rest goes in the submission's `truncated_text`).                                                                                                                                                                                       |
 | `multiline`                          | Wraps text over the box's height. `multiline_lines` spreads it over exactly that many lines (1 to 300), to match lines printed on the form.                                                                                                                                                           |
-| `comb`                               | One character in each of `comb_number_of_cells` equal boxes; `comb_value_offset` is the first character it prints.                                                                                                                                                                                    |
+| `comb`                               | One character in each of `comb_number_of_cells` equal boxes; `comb_value_offset` is how many boxes of the value's row come before it. A number is split from its printed form, and one with a digit that no box prints is a data error.                                                               |
 | `keep_leading_spaces`                | Keeps leading spaces, to line text up.                                                                                                                                                                                                                                                                |
 | `auto_calculate_max_length`          | With a monospace typeface: adds how many characters fit to the data schema as `max_length`.                                                                                                                                                                                                           |
 | `true_text`, `false_text`            | `boolean` with text display: what prints for `true` and `false`.                                                                                                                                                                                                                                      |
@@ -215,7 +222,14 @@ Signers fill these in through signature requests: see the `docspring-signature-r
 `date_time_format` `%d`, `%m` and `%Y` (`%-d` and `%-m` drop the leading zero).
 
 **SSN or other boxes with one character each**: three fields named `ssn` with `comb: true`, `comb_number_of_cells` 3,
-2 and 4, and `comb_value_offset` 0, 3 and 5. One value, `"123456789"`, fills all three.
+2 and 4, and `comb_value_offset` 0, 3 and 5. One value, `"123456789"`, fills all three; with `print_digits_only`,
+`"123-45-6789"` does too (any punctuation is left out; letters are refused).
+
+**Dollars and cents in separate boxes** (`$ ______ . __`, comb or not): one `number`, two fields with the same name.
+The dollars field has `number_part: "whole"` and the cents field `number_part: "decimals"` with `decimal_places` 2, so
+`1234.5` prints `1234` and `50`. Never make a second field name for the cents. In comb boxes add
+`comb_fill_from_right`; when the dollars are in groups (`$ [][][] , [][][] . [][]`), each group is a `whole` field
+with offsets 0 and 3, and the cents need no offset.
 More: [SSN and comb fields](https://docspring.com/docs/template-editor/ssn-fields/).
 
 **Text over several printed lines**: `multiline: true` with `multiline_lines` set to the number of lines on the form,

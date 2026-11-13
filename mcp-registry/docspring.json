@@ -3,7 +3,7 @@
   "name": "com.docspring/mcp",
   "title": "DocSpring",
   "description": "Fill PDF and Word templates, generate PDFs and Word documents, and collect e-signatures.",
-  "version": "1.9.2",
+  "version": "1.10.0",
   "websiteUrl": "https://docspring.com/connect-your-ai",
   "repository": {
     "url": "https://github.com/DocSpring/skills",
