@@ -3,7 +3,7 @@ name: docspring-page-designer
 description: Creates and changes DocSpring page designs, templates whose PDFs DocSpring lays out from a JSON layout of sections, text with fields, images, tables, form fields and codes, which the Page Designer also edits. Covers the layout format, repeating sections and tables, conditions, the fields DocSpring adds, previews and publishing. Use when the user wants a PDF designed from their data (an invoice, certificate or letter) without HTML or a Word document, or to change a page design, or when a project has template_type "page_designer" or a layout with sections. Not for HTML templates (docspring-html-templates), Word documents (docspring-word-templates), existing PDFs (docspring-pdf-templates) or app code (docspring-api-integration).
 license: MIT
 metadata:
-  version: '1.10.1'
+  version: '1.10.2'
   author: DocSpring
 ---
 
@@ -30,7 +30,7 @@ its JSON, so every change goes through the preview loop below.
    `/sections/0/elements/2/width`. Fix all of them and send the layout again.
 5. **Text is printed as it's written.** `{{ name }}` or `<b>` in a text run prints those characters. Values go in
    `field` nodes (see "Text and fields").
-6. **Preview after every change and look at every page.** `preview_template` returns PNG images of the pages, for
+6. **Preview after every change and look at every page.** `preview_template` returns JPEG images of the pages, for
    free and without a submission. Live documents use the account's credits: make one only when the user asks for a
    real document.
 7. **Publish only when the user agrees**, after telling them what changed.
@@ -310,7 +310,7 @@ Values the data sends: `date` fields take `YYYY-MM-DD`, and images `{"url": "htt
    longest value a field can get, a list long enough to run onto another page, optional values left out, and text
    with `&`, `<`, accents and line breaks.
 3. **Preview.** `preview_template` with `template_id`, `data` and up to 4 `pages` (default the first page). It returns
-   PNG images of the pages, watermarked, with `page_count`. A preview stops with an error at a required value the
+   JPEG images of the pages, watermarked, with `page_count`. A preview stops with an error at a required value the
    data leaves out, so send a value for every field. It doesn't check the data against the fields: run `validate_data` for that.
 4. **Look at every page** (call it again with the next `pages`): values that print blank or wrong, text cut off or
    overlapping, boxes that run past the margins, tables that break badly between pages, sections in the wrong order,

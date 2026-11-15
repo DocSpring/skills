@@ -3,7 +3,7 @@ name: docspring-html-templates
 description: Creates, restyles and fixes DocSpring HTML/CSS templates (Liquid HTML, SCSS, headers, footers, page size and margins), previewing the draft after each change and checking its pages visually. Also rebuilds a DocSpring PDF template as an HTML template that takes the same data. Use when the user wants to design or edit a DocSpring HTML template, fix its layout, page breaks, fonts, images, headers, footers or page numbers, debug a Liquid or SCSS error on a submission, or move from a PDF template to HTML/CSS, or when a project has template_type "html", tpl_ IDs, a docspring package or sync.api.docspring.com. Not for fields on PDF templates (docspring-pdf-templates), app code that calls the API (docspring-api-integration), Shopify Liquid, or HTML-to-PDF with Puppeteer or other local tools.
 license: MIT
 metadata:
-  version: '1.10.1'
+  version: '1.10.2'
   author: DocSpring
 ---
 
@@ -21,7 +21,7 @@ so every change goes through the render-and-look loop below.
    user's documents only after the next `publish_version`. Render the draft to test it: that needs no publish.
 2. **Render after every change and look at every page.** Don't judge a layout from the HTML or from a local browser:
    DocSpring's renderer adds its own CSS, has its own fonts and prints with its own page settings.
-3. **Preview, don't submit.** `preview_template` renders the draft with your data and returns PNG images of its pages,
+3. **Preview, don't submit.** `preview_template` renders the draft with your data and returns JPEG images of its pages,
    not a PDF, for free and without a submission. Make a test PDF (`generate_pdf` with `test: true`, free and watermarked) only to check something a preview can't
    show, such as a signature request. Live PDFs use the account's credits: make one only when the user asks for a real
    document.
@@ -61,7 +61,7 @@ so every change goes through the render-and-look loop below.
    `html_engine_options` is replaced whole: take it from `get_template`, change it and send all of it. A template with
    `locked: true` refuses changes: ask the user before you set it to `false`.
 4. **Render.** `preview_template` with `template_id`, `data` and up to 4 `pages` (default the first page). It renders
-   the draft, waits for it and returns PNG images of the pages, with `page_count`. An error comes back as the tool's
+   the draft, waits for it and returns JPEG images of the pages, with `page_count`. An error comes back as the tool's
    error: a Liquid or SCSS error names the property and line ("Error in HTML: Liquid syntax error (line 12): Unknown
    tag 'foo'"). A preview doesn't check the data against the template's fields: run `validate_data` for that.
 5. **Look.** Call `preview_template` again with the next `pages` to see the rest. Check each page for text that overflows or is cut off, a table row split across pages, an empty last

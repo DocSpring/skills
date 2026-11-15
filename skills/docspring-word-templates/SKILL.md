@@ -3,7 +3,7 @@ name: docspring-word-templates
 description: Creates and fixes DocSpring Word templates, Word documents (.docx) with Liquid tags that DocSpring fills in with submission data to make Word documents or PDFs. Covers tags (values, filters, conditions, loops over table rows, pictures, signatures, barcodes), the fields DocSpring adds from them, replacing the document, previews and output formats. Use when the user wants to turn a Word document into a DocSpring template, add or fix its tags, find out why a Word template's submission failed, or get Word documents or PDFs from one, or when a project has template_type "docx", output_format, tpl_ IDs or a docspring package. Not for Word files DocSpring doesn't fill in (use a general Word skill), HTML templates (docspring-html-templates), PDF templates (docspring-pdf-templates) or app code that calls the API (docspring-api-integration).
 license: MIT
 metadata:
-  version: '1.10.1'
+  version: '1.10.2'
   author: DocSpring
 ---
 
@@ -24,7 +24,7 @@ is. You can't tell how a filled-in document looks from its tags, so every change
 2. **You change the document by replacing it.** No tool edits a Word template's text. Edit the .docx itself (with a
    Word library, if you can run code), or ask the user to edit it in Word or in DocSpring's template editor, then send
    the whole file with `replace_template_pdf`. The template keeps its fields and settings.
-3. **Preview after every change and look at every page.** `preview_template` returns PNG images of the PDF's pages,
+3. **Preview after every change and look at every page.** `preview_template` returns JPEG images of the PDF's pages,
    for free and without a submission. Make a test document (`generate_pdf` with `test: true`, free and watermarked)
    only to check the Word file itself. Live documents use the account's credits: make one only when the user asks for
    a real document.
@@ -174,7 +174,7 @@ Values the data sends:
    longest value a field can get, a list long enough to run onto another page, optional values left out, and text
    with `&`, `<`, accents and line breaks.
 3. **Preview.** `preview_template` with `template_id`, `data` and up to 4 `pages` (default the first page). It fills
-   in the draft, converts it to PDF and returns PNG images of the pages, watermarked, with `page_count`. A problem
+   in the draft, converts it to PDF and returns JPEG images of the pages, watermarked, with `page_count`. A problem
    comes back as the tool's error, naming the tag and where it is. A preview doesn't check the data against the
    fields: run `validate_data` for that.
 4. **Look at every page** (call it again with the next `pages`): values that print blank or wrong, a tag printed as

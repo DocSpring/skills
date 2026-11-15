@@ -3,7 +3,7 @@ name: docspring-pdf-templates
 description: Turns a user's PDF form into a working DocSpring PDF template. Creates it from a link or file, detects or imports its fields, checks them against page images, fixes names, types, positions, checkboxes and signature fields, test-fills the draft and publishes a version. Use when the user wants to make a PDF fillable with DocSpring, set up or fix a template's fields, replace a template's PDF, copy or move templates, or compare, publish or restore template versions, or when a project uses DocSpring (a docspring package, tpl_ template IDs, sync.api.docspring.com). Not for HTML templates, app code that generates PDFs or sending documents for signature (other DocSpring skills), or for filling or editing a PDF on disk without DocSpring.
 license: MIT
 metadata:
-  version: '1.10.1'
+  version: '1.10.2'
   author: DocSpring
 ---
 
@@ -28,7 +28,7 @@ it in. This skill takes the user's PDF to a template that fills in correctly, th
    removing a field, making it required or changing its type changes the data that callers must send.
 4. **A new field is a required `string` printed as text** unless you say otherwise. Send `required: false`, the
    `type` and the `display_type` the field needs.
-5. **Preview, don't submit.** `preview_template` fills the draft with your data and returns PNG images of its pages,
+5. **Preview, don't submit.** `preview_template` fills the draft with your data and returns JPEG images of its pages,
    not a PDF, for free and without a submission. Make a test PDF (`generate_pdf` with `test: true`, free and
    watermarked) only when you need the PDF itself. Live PDFs use the account's credits: make one only when the user
    asks for a real document.
@@ -258,7 +258,7 @@ user before you unlock it.
 2. Optionally, `validate_data` with `version: "draft"` finds missing or wrong values. A preview doesn't check the
    data against the fields.
 3. `preview_template` with the `template_id`, the data and up to 4 `pages` (default the first page). It fills the
-   draft, waits for it and returns PNG images of the pages, with `page_count`. Call it again with the next `pages` to
+   draft, waits for it and returns JPEG images of the pages, with `page_count`. Call it again with the next `pages` to
    see the rest. An error names what to fix, such as a formula that divides by zero, an image URL that doesn't
    download or a barcode value its symbology can't print.
 
