@@ -232,7 +232,8 @@ so the user's integration only has to change the template ID.
    - HTML templates don't calculate formulas: leave out a formula `default` and calculate the value in Liquid.
 5. **Copy the template's settings** with `update_template`: `field_dependencies` (conditional logic, which still
    hides fields and makes them required), `allow_additional_properties` (which decides whether keys without a field
-   are accepted), and the expiry settings (`expire_submissions`, `expire_after`, `expiration_interval`). For
+   are accepted), and the expiry settings (`override_account_expiry`, `expire_submissions`, `expire_after`,
+   `expiration_interval`: a template that doesn't override the account's expiry follows the account's). For
    `encrypt_pdfs`, ask the user for the password: `get_template` doesn't show it.
 6. **Rebuild the layout** with plain HTML and CSS (headings, paragraphs, tables, flexbox or grid), not absolutely
    positioned boxes, so the user can edit it later. Do in Liquid what the PDF template's fields did: `date` formats,
