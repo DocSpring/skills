@@ -1,6 +1,6 @@
 {
   "name": "docspring",
-  "version": "1.10.0",
+  "version": "1.10.1",
   "description": "Fill PDF and Word templates, generate PDFs from HTML templates and collect e-signatures with DocSpring's skills and MCP server.",
   "author": {
     "name": "DocSpring",
@@ -43,8 +43,8 @@
       "Write the code that fills our onboarding template from a customer record"
     ],
     "brandColor": "#3C8EE0",
-    "composerIcon": "./logo.svg",
-    "logo": "./logo.svg",
+    "composerIcon": "./icon.png",
+    "logo": "./icon.png",
     "screenshots": []
   }
 }
