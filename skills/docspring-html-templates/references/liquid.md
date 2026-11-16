@@ -59,7 +59,7 @@ preview until it has a field for each variable.
 {% initials applicant_initials, preview_type: text, font-size: 18px, color: #333 %}
 ```
 
-The value in `data` is one of:
+The tag prints a signature value, one of:
 
 - `{"base64": "<PNG or JPEG as base64>"}`: printed as `<img class="signature-image" src="data:...">`.
 - `{"url": "https://..."}`: the template needs a `signature` (or `initials`) field with this name, which makes
@@ -75,8 +75,14 @@ style the classes (`.signature-image`, `.signature-text`, `.initials-image`, `.i
 `preview_type: text` shows a text signature in the editor's preview instead of an image.
 
 A missing value prints nothing. Keep these tags in the body: a text signature loads a Google Fonts stylesheet, and a
-header or footer that loads a stylesheet fails the render. HTML templates can't take signature requests, so the
-signature must already be in the data.
+header or footer that loads a stylesheet fails the render.
+
+Only signers sign. Saving the code adds a `signature` or `initials` field for each tag, and the API refuses a value for
+one in `data`, with or without signature requests: the submission is `invalid_data`. With signature requests, a signer
+who's given the field signs in the tag's place, in a box of the tag's `width` and `height` (by default 5cm × 2cm for
+`signature` and 2cm × 1cm for `initials`), and the tag prints their signature. `role:` gives the field to one of the
+template's signer roles, by its key (`role: tenant`), or to `sender`, whose `data` fills it in. The
+`docspring-signature-requests` skill covers signers.
 
 ### `template_image_url`
 

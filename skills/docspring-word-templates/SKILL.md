@@ -163,8 +163,14 @@ Values the data sends:
 - Images: `{"url": "https://..."}` or `{"base64": "..."}`.
 - Signatures and initials: an image like that, or a typed name,
   `{"text": {"name": "Jane Doe", "typeface": "Dancing Script"}}`, drawn in its typeface.
-- Signature requests are for PDF templates only. `{% signature %}` prints a signature that the submission's data
-  already holds.
+- With signature requests, `{% form_field tenant_name %}` (`kind:` `text`, `date`, `checkbox`, `radio`, `dropdown`,
+  `signature`, `initials`, `date_signed`) is a field a signer fills in on the PDF; without them it prints the field's
+  value. Radio buttons sharing a field are one group, a tag for each `option: Card`. It needs a
+  field on the field list, which saving the document adds unless the API request sends `sync_fields: false`. In a
+  signature request, a required one that an `{% if %}` leaves out of the document fails the submission, so make the
+  field of one the data can leave out optional with `update_fields`. A tag's `required: false` only applies when its
+  field is first added: changing the tag doesn't change a field that exists. A `date_signed` field is always added as
+  optional. The `docspring-signature-requests` skill covers signers.
 
 ## The preview loop
 

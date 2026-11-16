@@ -234,12 +234,24 @@ it. Details: `https://docspring.com/docs/page-designer/layout-format/checkbox/`.
 
 ### Form fields
 
-A `form_field` is a fillable field of the PDF's form, filled in from the data, which whoever opens the PDF can change.
-Use one only when the user wants an editable PDF: values nobody should change belong in text boxes and checkboxes.
-`kind` is `text`, `checkbox`, `radio` or `dropdown`, and `fieldName` is its name in the PDF (no periods). A text
+A `form_field` has a field on the template's field list, added when the layout saves, and its value comes from one of
+three places: the data, which prints plain text unless the field's `editable` setting or the submission's `editable`
+keeps it fillable; a signer, on a signature request's signing page; or whoever opens the PDF, who fills in the PDF's own
+field. Deleting the field from the list fails its documents with a message that names it.
+A form field is required by default, except a checkbox, a field with its own `value` or `checked`, and `date_signed`. A
+submission without signature requests must then give it a value (a 422 otherwise), so set `required: false` for a field
+that's left for a PDF reader or that the data can leave out. `required` only sets the field when it's added: use
+`update_fields` after that. In a signature request, a required field that a section's condition leaves out of the
+document fails the submission with a message that names it, and in a repeating section each item in the data needs its own.
+`kind` is `text`, `date`, `checkbox`, `radio`, `dropdown`, `signature`, `initials` or `date_signed`, `fieldName` is its
+name (no periods), and `role` gives it to a signer role by its key, or `sender`. Signature, initials and date signed
+fields can't go in a header or footer. A text
 field's `value` is inline content like a QR code's value (text and field nodes), with `multiline` and `maxLength`. A
+value too long for a text, date, drop-down or date signed field shrinks, down to `minFontSize` (5), unless `overflow` is
+`fixed`, which cuts off what doesn't fit at the end of a word. A text field that shrinks refuses a value of more than
+about what fits at its smallest size (a 422), unless you give it a `maxLength`. A
 checkbox or radio button is checked by its `checked` condition; radio buttons with one `fieldName` are a group, each
-with its own `option`. A drop-down lists `options` (all different) and selects the one equal to its `value`, an empty
+with its own `option`, and a signer given the group chooses one. A drop-down lists `options` (all different) and selects the one equal to its `value`, an empty
 choice when the value is blank, and fails the submission for a value that isn't an option. Each kind takes only its
 own properties (no `align` on a checkbox or radio button), and other fields sharing a name get `_2`, `_3`.
 `readOnly`, `fontSize` (10), `color`, `align`, `border` (1 point black, none when `null`), `background`
@@ -248,9 +260,9 @@ stack a field is 20 points tall without a `height` (60 multiline, 12 for a check
 a text box. In a repeating section each item's fields are named with its number (`quantity_1`, `quantity_2`), so each
 item's radio buttons are a group of their own. Details: `https://docspring.com/docs/page-designer/layout-format/form-field/`.
 
-Page designs have no signature fields yet, and never print a signature from the data, since signatures only come from
-the person signing: a picture of one is an `image`. A document that people sign needs a PDF template, which can have
-signature requests.
+Page designs never print a signature from the data, since signatures only come from the person signing: a picture of
+one is an `image`. A document that people sign needs a `signature` form field, and the `docspring-signature-requests`
+skill covers sending it.
 
 ### Images and codes
 

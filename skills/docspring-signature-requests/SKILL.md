@@ -1,6 +1,6 @@
 ---
 name: docspring-signature-requests
-description: Collects e-signatures with DocSpring signature requests. Sends a PDF template to one or more signers, whom DocSpring emails (in order and with reminders when asked) or who get links the user sends, embeds the signing form in an app with Signature Requests JS, and tracks signers, the signed PDF and the audit trail. Use when the user wants someone to sign, initial or fill in a DocSpring template, asks to send a document for signature, for signing links, e-signatures, several signers, a signing order or a signing page in their app, or works on code that sends signature_requests to DocSpring (data_requests in API v1 code), loads signature_request.v*.js or handles signature_request webhook events. Not for signing or stamping a local PDF without DocSpring, filling a template that nobody signs (docspring), or adding signature fields to a template (docspring-pdf-templates).
+description: Collects e-signatures with DocSpring signature requests. Sends a template to one or more signers, whom DocSpring emails (in order and with reminders when asked) or who get links the user sends, embeds the signing form in an app with Signature Requests JS, and tracks signers, the signed PDF and the audit trail. Use when the user wants someone to sign, initial or fill in a DocSpring template, asks to send a document for signature, for signing links, e-signatures, several signers, a signing order or a signing page in their app, or works on code that sends signature_requests to DocSpring (data_requests in API v1 code), loads signature_request.v*.js or handles signature_request webhook events. Not for signing or stamping a local PDF without DocSpring, filling a template that nobody signs (docspring), or adding signature fields to a template (docspring-pdf-templates).
 license: MIT
 metadata:
   version: '1.10.2'
@@ -10,7 +10,7 @@ metadata:
 # DocSpring signature requests
 
 A signature request asks one person to fill in their fields of a submission and sign it. You create a submission
-from a PDF template with one signature request per signer. The submission stays `waiting_for_signature_requests` until
+from a template with one signature request per signer. The submission stays `waiting_for_signature_requests` until
 every signer has completed theirs. Then DocSpring generates the PDF with everyone's values and signatures, and an
 audit trail of who viewed and signed it, when, and how they were authenticated. DocSpring emails each signer their
 link to sign and, at the end, the signed PDF, unless the request sets `send_email: false`.
@@ -37,7 +37,11 @@ API: new signature requests have `srq_...` IDs, older ones keep their `drq_...` 
 4. **Confirm before DocSpring emails anyone.** The emails go out as soon as the request is created, and can't be
    recalled. Check the template, each signer's name, email and fields, the signing order and the message with the user
    first.
-5. **PDF templates only.** An HTML template can't have signature requests.
+5. **Every template type.** On a PDF template, signers fill in the fields on its pages. An HTML template's, a Word
+   template's or a page design's document is made before anyone signs, with `data`, and signers fill in its form fields
+   on it. Nothing they fill in changes the rest of it: a show/hide rule that reads one is a 422. A value its text reads
+   (`{{ address }}`) comes from `data`, or from the signer who signs first (the only signer, or the only one in the
+   first `signing_step`), whose signing page asks for it before the document is made.
 6. **Read field names from the template** (`get_template_schema`, `get_fields`). Never guess them.
 7. **Only signers sign.** A signature or initials value in `data` makes the submission `invalid_data`.
 8. **Signers sign in any order unless `signing_order` is `sequential`.** Then they sign one `signing_step` at a time:
@@ -66,12 +70,13 @@ API: new signature requests have `srq_...` IDs, older ones keep their `drq_...` 
 
 1. Find it with `list_templates`, then read `get_template_schema` (each field's name, type and whether it's required)
    or `get_fields`.
-2. Decide who fills in each field: the sender (`data`), exactly one signer (that signer's `fields`), or nobody.
+2. Decide who fills in each field: the sender (`data`), exactly one signer (that signer's `fields`, or the template's
+   signer role that the field has), or nobody.
 3. Each signer who signs needs their own `signature` or `initials` field. Fields with the same name share one value,
    so two people can't both sign a field named `signature`: the template needs `employee_signature` and
    `manager_signature`, say.
 4. For the date someone signed, a date field named `@@signature_requests/0/completed_at` prints when Signer 1
-   completed (`/1/` for Signer 2, and so on; `viewed_at` is the other one). DocSpring fills these in: signers can't
+   completed (`/1/` for Signer 2, and so on, or a signer role's key, `/tenant/`; `viewed_at` is the other one). DocSpring fills these in: signers can't
    type in them, so leave them out of every `fields` list.
 5. If signature, initials or date fields are missing or misplaced, load `docspring-pdf-templates`, which adds fields,
    checks them on page images and publishes. Field edits change the draft. Until the template's first
@@ -120,7 +125,8 @@ When the user asks to send a document to people to sign, confirm the details wit
 To try it first, send the same request with `test: true` and the user's own email address for each signer.
 
 - `test` (required): `true` unless the user wants a real document.
-- `signers` (required): each needs `fields`, and an `email` when DocSpring emails them. `name` goes in the emails and
+- `signers` (required): each needs an `email` when DocSpring emails them, and `fields` unless its `role` gives it
+  fields or it's the only signer (section 4). `name` goes in the emails and
   on the audit trail. `role` is optional (below), `metadata` holds the user's own data about that signer, and
   `prefilled_values_editable` lets the signer change values from `data` (section 4). `send_email: false` leaves one
   signer out of DocSpring's emails: the result has a link for them instead.
@@ -162,7 +168,7 @@ it can't record that the user sent the link or how the app signed the person in.
 ## 3. Create one from app code or the CLI (API v2)
 
 1. `POST /templates/{template_id}/submissions` (`createSubmission` in the API clients) with `signature_requests`.
-   Every signature request needs `fields`. DocSpring emails each signer their link unless `send_email` is `false`,
+   A signature request needs `fields` unless its `role` gives it fields or it's the only one (section 4). DocSpring emails each signer their link unless `send_email` is `false`,
    on the submission or the signature request, and the email options of section 2 work the same way.
 2. A signer DocSpring emails needs nothing more: skip to step 5. For each signature request with `send_email: false`:
    `POST /signature_requests/{signature_request_id}/tokens` (`createSignatureRequestToken`) with
@@ -214,21 +220,31 @@ update endpoints, and the errors.
 
 ## 4. How fields are assigned
 
-- A signer fills in exactly the fields in their `fields` list, and each field can be in only one list (a 422
-  `duplicate` otherwise).
-- Every field in nobody's list comes from `data`. A required field that's in nobody's list and has no value in
-  `data` makes the submission `invalid_data`; an optional one stays blank.
+- A signer fills in the fields in their `fields` list and the ones the template gives their role (a field's
+  `signer_role`), and each field can be in only one list (a 422 `duplicate` otherwise). A field whose `signer_role`
+  is `sender` comes from `data`, and listing it is a 422.
+- One signer: they get every field without a role that `data` doesn't fill in, with no `fields` list.
+- Two or more signers: every required field that `data` doesn't fill in needs a signer, or the request is a 422 that names it.
+  Give it a `signer_role` in the template, list it in `fields`, or send it in `data`.
+- A role with no signature request: `data` fills in its fields, and a required one with no value makes the submission
+  `invalid_data`. A required signature, initials or date signed field on it is a 422.
 - A field in `data` and in a signer's list is a 422 `prefilled`, unless that signature request sets
   `prefilled_values_editable: true` to let the signer change the value.
 - A name in `fields` that the template doesn't have makes the submission `invalid_data`. With
   `ignore_unknown_fields: true` (API only), unknown names are dropped instead, so one field list can serve several
   templates.
 - List fields: `items/~/code` asks for that column in every item, `items/0/code` for one item.
+- HTML, Word and page design templates: a required form field must be in the document. When the data leaves one out (an
+  `{% if %}` or a section's condition), the submission fails with a message that names it, so make a field the data can
+  leave out optional with `update_fields` (a tag's or element's `required` only applies when its field is first added).
+  In a `{% for room in rooms %}` loop or a repeating section, each item in the data needs its
+  own: `{% form_field room.initials, kind: initials %}`, which `fields` lists as `rooms/~/initials` or `rooms/0/initials`.
 - A formula or show/hide rule that uses another signer's field is a 422 `other_signer`: nobody could sign it safely,
   because a later signer would change what an earlier one signed. Give a formula's or rule's inputs and the fields
   it changes to the same signer, or send the inputs in `data`.
 - `editable: true` is a 422: a signed PDF is always static, so nobody can change it after signing.
-- **Roles.** Without `role`, the first signer is `Signer 1`, the second `Signer 2`, up to 100. A role decides which
+- **Roles.** A template's `signer_roles` name its signers, and `role` names one by its key (`tenant`) or place
+  (`Signer 1` is the first). Without roles, the first signer is `Signer 1`, the second `Signer 2`, up to 100. When the template's roles have names of their own (`Tenant`), two or more signers each need a `role`, or the request is a 422. A role decides which
   `@@signature_requests/<n>/...` fields print that signer's dates (`Signer 1` is `0`) and the order of
   `signature_requests` in responses, not who signs first (that's `signing_step`). To leave a signer out, give every signer a `role` and skip
   that one: either all signers have a role or none does.

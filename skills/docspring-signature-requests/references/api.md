@@ -40,22 +40,22 @@ The create request's body takes the usual submission properties (`test`, `data`,
 `signing_order`, `email_subject`, `email_message`, `cc`, `reply_to`, `notification_emails`, `notify_when_signed` and
 `reminders`, described in `SKILL.md` section 2) and `signature_requests`, up to 100 of:
 
-| Property                                                                                    | Required    | Notes                                                                          |
-| ------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------ |
-| `fields`                                                                                    | yes         | Field names this person fills in. At least one; each field in only one list.   |
-| `auth_type`                                                                                 | see notes   | Required with `send_email: false`. Otherwise always `email_link`, the default. |
-| `email`                                                                                     | see notes   | Required when DocSpring emails the person. Shown on the audit trail.           |
-| `name`                                                                                      | no          | In DocSpring's emails and on the audit trail.                                  |
-| `send_email`                                                                                | no          | `false`: DocSpring doesn't email this person. Default: the submission's.       |
-| `signing_step`                                                                              | no          | With `signing_order: sequential`: on all signature requests, or none.          |
-| `role`                                                                                      | no          | `Signer 1` to `Signer 100`. All signature requests have one, or none does.     |
-| `metadata`                                                                                  | no          | Your own data, such as the signer's ID in your app.                            |
-| `prefilled_values_editable`                                                                 | no          | Lets the person change values that `data` has for their fields.                |
-| `ignore_unknown_fields`                                                                     | no          | Drops names the template doesn't have, instead of `invalid_data`.              |
-| `auth_second_factor_type`                                                                   | no          | `none`, `phone_number`, `totp`, `mobile_push`, `security_key`, `fingerprint`.  |
-| `auth_provider`                                                                             | for `oauth` | The service that signed them in, such as `google`.                             |
-| `auth_session_started_at`                                                                   | no          | When your app signed them in. Set for you with `email_link`.                   |
-| `auth_session_id_hash`, `auth_user_id_hash`, `auth_username_hash`, `auth_phone_number_hash` | no          | Hashes for the audit trail (section 8).                                        |
+| Property                                                                                    | Required    | Notes                                                                                                                             |
+| ------------------------------------------------------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `fields`                                                                                    | no          | Field names this person fills in. Needed unless `role` gives them fields or they're the only signer. Each field in only one list. |
+| `auth_type`                                                                                 | see notes   | Required with `send_email: false`. Otherwise always `email_link`, the default.                                                    |
+| `email`                                                                                     | see notes   | Required when DocSpring emails the person. Shown on the audit trail.                                                              |
+| `name`                                                                                      | no          | In DocSpring's emails and on the audit trail.                                                                                     |
+| `send_email`                                                                                | no          | `false`: DocSpring doesn't email this person. Default: the submission's.                                                          |
+| `signing_step`                                                                              | no          | With `signing_order: sequential`: on all signature requests, or none.                                                             |
+| `role`                                                                                      | no          | A signer role's key (`tenant`), or its place (`Signer 1` to `Signer 100`). All signature requests have one, or none does.         |
+| `metadata`                                                                                  | no          | Your own data, such as the signer's ID in your app.                                                                               |
+| `prefilled_values_editable`                                                                 | no          | Lets the person change values that `data` has for their fields.                                                                   |
+| `ignore_unknown_fields`                                                                     | no          | Drops names the template doesn't have, instead of `invalid_data`.                                                                 |
+| `auth_second_factor_type`                                                                   | no          | `none`, `phone_number`, `totp`, `mobile_push`, `security_key`, `fingerprint`.                                                     |
+| `auth_provider`                                                                             | for `oauth` | The service that signed them in, such as `google`.                                                                                |
+| `auth_session_started_at`                                                                   | no          | When your app signed them in. Set for you with `email_link`.                                                                      |
+| `auth_session_id_hash`, `auth_user_id_hash`, `auth_username_hash`, `auth_phone_number_hash` | no          | Hashes for the audit trail (section 8).                                                                                           |
 
 `data` is optional with signature requests (required without them). `editable: true` isn't allowed.
 
@@ -145,8 +145,8 @@ as the second argument. Its enum properties take the enums (`DocSpring.Signature
 `DocSpring.SignatureRequestEventType.SendRequest`, `DocSpring.SignatureRequestMessageType.Email`,
 `DocSpring.SignatureRequestAuthType.Oauth` and so on), and its times are `Date` objects.
 
-The clients check a request against the API's schema before sending it, so a signature request without `fields`
-raises a validation error with a `pointer` to it.
+The clients check a request against the API's schema before sending it, so a signature request with an empty `fields`
+list raises a validation error with a `pointer` to it.
 
 ## 4. Signing links (tokens)
 
@@ -209,10 +209,8 @@ The create request checks the request's shape first. These are 422 `validation_f
 | `duplicate`      | `/signature_requests/1/role`          | Another signature request has this role.                                  |
 | `prefilled`      | `/signature_requests/0/fields/2`      | `data` has a value for it: set `prefilled_values_editable`.               |
 | `required`       | `/signature_requests/0/role`          | Some signature requests have a role and this one doesn't.                 |
-| `invalid`        | `/signature_requests/0/role`          | Not `Signer 1` to `Signer 100`.                                           |
 | `other_signer`   | `/signature_requests/0/fields/1`      | Another signer's formula or show/hide rule uses this field.               |
 | `not_allowed`    | `/editable`                           | `editable: true` with signature requests.                                 |
-| `not_allowed`    | `/signature_requests`                 | The template is an HTML template.                                         |
 | `required`       | `/signature_requests/0/email`         | DocSpring emails this person, so it needs their address.                  |
 | `required`       | `/signature_requests/0/auth_type`     | `send_email: false` and no `auth_type`.                                   |
 | `not_allowed`    | `/signature_requests/0/auth_type`     | Not `email_link` for a person DocSpring emails.                           |
@@ -225,9 +223,18 @@ The create request checks the request's shape first. These are 422 `validation_f
 | `invalid`        | `/email_subject`, `/email_message`    | A variable or tag they can't use.                                         |
 
 Errors that depend on the template save the submission as `invalid_data` and return a 422 `invalid_data` with its
-`submission_id`: a field name the template doesn't have, a signature or initials value in `data` or in a field
-override's `default`, or a required field that neither `data` nor any signer fills in. Nobody can sign it: fix the
-request and create a new one.
+`submission_id` and the same `details`: a field name the template doesn't have, a signature or initials value in
+`data` or in a field override's `default`, a required field that neither `data` nor any signer fills in, and who fills
+in each field:
+
+| `details[].code` | `pointer`                        | Cause                                                                                   |
+| ---------------- | -------------------------------- | --------------------------------------------------------------------------------------- |
+| `not_found`      | `/signature_requests/0/role`     | Not one of the template's signer roles, or `Signer 1` to `Signer 100`.                  |
+| `not_allowed`    | `/signature_requests/0/fields/1` | The field is the sender's, another role's, or a value only the first signer can answer. |
+| `required`       | `/signature_requests`            | A required field has no signer, with two or more signature requests.                    |
+
+Nobody can sign an `invalid_data` submission: fix the request and create a new one. A request that also has an error
+from the first table saves nothing, and its 422 `validation_failed` lists the rows of this table too.
 
 Other statuses: 403 when a demo API token creates signature requests or a test API token acts on a live signature
 request; 403 `upgrade_required` for a live signature request before the account's first payment (a credit pack or a

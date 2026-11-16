@@ -98,8 +98,8 @@ print. Fields also:
 - feed the template editor's preview, which renders random values for the fields in Liquid's strict mode. In the
   editor, a variable that isn't a field shows an "undefined variable" error, though submissions print it as blank.
 
-When the user saves code in DocSpring's template editor, it adds a required field for each new value the code's tags
-use. `update_template` doesn't: add the fields yourself.
+DocSpring adds a required field for each new value the code's tags use, when code is saved in the template editor or
+with `create_html_template` or `update_template`. Set their types and make them optional with `update_fields`.
 
 `add_fields` works on HTML templates. Each field needs a `name` and a `type` (default `string`), plus settings such as
 `required`, `title`, `description`, `default`, `option_list` and `include_time`. Leave out `page`, `x`, `y`, `width`
@@ -156,8 +156,13 @@ These are what agents most often get wrong.
   idle and fonts have loaded, so a slow or unreachable URL fails the render. JavaScript runs, but don't rely on it.
 - **Fonts.** The renderer has the Liberation fonts (metric-compatible with Arial, Times New Roman and Courier New) and
   Noto Sans, Serif, CJK and Emoji. Any other typeface needs a web font: the fonts on your machine aren't there.
-- **Signature requests don't work with HTML templates**: they're for PDF templates only. `{% signature %}` prints a
-  signature that the submission's data already holds.
+- **Signers fill in form fields.** With signature requests, `{% form_field tenant_name %}` (`kind:` `text`, `date`,
+  `checkbox`, `radio`, `dropdown`, `signature`, `initials`, `date_signed`) is a field a signer fills in; without them it
+  prints the field's value. Radio buttons sharing a field are one group, a tag for each `option: Card`. It needs a field on the template's field list: saving the code adds it, unless the API request sends
+  `sync_fields: false`. If the field is deleted, documents fail with a message that names it. In a signature request, a
+  required one that an `{% if %}` leaves out of the document fails the submission, so make the field of one the data
+  can leave out optional with `update_fields`. A tag's `required: false` only applies when its field is first added:
+  changing the tag doesn't change a field that exists. The `docspring-signature-requests` skill covers signers.
 
 Read `references/liquid.md` before using DocSpring's tags (`signature`, `initials`, `template_image_url`,
 `metadata`, `template`) or filters (`currency`, `delimited`, `pluralize`, `in_time_zone`), and when a value prints
@@ -210,7 +215,7 @@ A template's type can't change, so the HTML version is a new template with its o
 so the user's integration only has to change the template ID.
 
 1. **Check that it can move.** Stop and tell the user if they use the PDF template for something HTML templates don't
-   have: signature requests, visual forms (filled in on the PDF's pages) or editable PDFs (`editable_submissions`). If
+   have: visual forms (filled in on the PDF's pages) or editable PDFs (`editable_submissions`). If
    the PDF template has `parse_dates_using_template_date_format: true`, ask whether the integration sends dates as
    `03/05/2026`: an HTML template's date fields only take `YYYY-MM-DD`, so those submissions would fail.
 2. **Read the PDF template.** `get_template` (its settings, `parent_folder_id`, and `document.page_dimensions` in
@@ -289,7 +294,7 @@ get the preview again for new ones. A preview is deleted an hour after it's made
 - `docspring`: connecting, regions, API tokens, test and live PDFs, errors.
 - `docspring-pdf-templates`: templates made from a PDF, and their fields.
 - `docspring-api-integration`: the user's app code that generates PDFs, webhooks and model code.
-- `docspring-signature-requests`: sending PDF templates for signing.
+- `docspring-signature-requests`: sending templates for signing.
 - `docspring-embedded-forms`: forms that collect a template's data.
 - Docs: `https://docspring.com/docs/html-templates/overview/`,
   `https://docspring.com/docs/html-templates/liquid-filters/` and
