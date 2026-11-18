@@ -3,7 +3,7 @@ name: docspring-pdf-templates
 description: Turns a user's PDF form into a working DocSpring PDF template. Creates it from a link or file, detects or imports its fields, checks them against page images, fixes names, types, positions, checkboxes and signature fields, test-fills the draft and publishes a version. Use when the user wants to make a PDF fillable with DocSpring, set up or fix a template's fields, replace a template's PDF, copy or move templates, or compare, publish or restore template versions, or when a project uses DocSpring (a docspring package, tpl_ template IDs, sync.api.docspring.com). Not for HTML templates, app code that generates PDFs or sending documents for signature (other DocSpring skills), or for filling or editing a PDF on disk without DocSpring.
 license: MIT
 metadata:
-  version: '1.11.0'
+  version: '1.11.1'
   author: DocSpring
 ---
 
@@ -106,9 +106,9 @@ been processed yet" error: both mean wait.
 
 ### When AI naming was skipped or failed
 
-AI names the fields only while the account has free AI pages for the month or credits left. A page's `ai_naming` and
-`ai_error` say what happened: `skipped` with `credits` (none left: an account without credits gets this once it has
-used the month's free AI pages), `skipped` with `skipped` (someone skipped AI setup in the template editor), or
+AI names the fields only while the account has free AI pages for the month or credits left, page by page: a run that
+runs short names some pages and not others. A page's `ai_naming` and `ai_error` say what happened: `skipped` with
+`credits` (none left: an account without credits gets this once it has used the month's free AI pages), `skipped` with `skipped` (someone skipped AI setup in the template editor), or
 `failed` with `unavailable` or `error`. Those pages' fields keep plain names: a fillable PDF's own names, or generic
 ones such as `detected_text_box_page_1_3` for fields found on a flat PDF, with basic types (a signature line comes out
 as a text field). Name them yourself:
