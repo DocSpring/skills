@@ -3,7 +3,7 @@ name: docspring
 description: Connects to DocSpring, the service that fills PDF and Word templates with data, generates PDFs from HTML templates and collects e-signatures, through its MCP server, CLI or REST API v2, and routes work to the other docspring-* skills. Covers access levels, API tokens, US and EU accounts, templates and their draft and published versions, submissions, test vs live PDFs and credits, IDs, sync waits, errors and rate limits. Use when the user mentions DocSpring or asks to list or fill their templates, make a PDF or Word document from a template, check a submission, review their account or find out why submissions failed, or connect DocSpring, or when a project has a docspring package, tpl_ IDs, DOCSPRING_TOKEN_ID or sync.api.docspring.com. Not for reading, merging or editing local PDF files without DocSpring (use a general PDF skill).
 license: MIT
 metadata:
-  version: '1.11.1'
+  version: '1.11.2'
   author: DocSpring
 ---
 
@@ -271,16 +271,17 @@ fall back on the HTTP status for a code you don't know.
 
 Every access level has these, over MCP, the CLI (`docspring support ...`) and the API (`/support/...`):
 
-- **Stuck, or an error you can't fix from its message:** ask `support_get_help` (`docspring support ask`,
-  `POST /support/help`) first, with the question, the tool and the error. It answers at once from DocSpring's
-  documentation and reaches no person, so don't ask the user first. It knows nothing about the account.
+- **Stuck, or an error you can't fix from its message:** ask first, with the question, the tool and the error: MCP
+  tool `support` with action `help` (`docspring support ask`, `POST /support/help`). It answers at once from
+  DocSpring's documentation and reaches no person, so don't ask the user first. It knows nothing about the account.
 - **Something got in the way** (a confusing error, a missing feature, a bug you worked around): send it with
-  `support_send_feedback` when the task is done or blocked, without asking the user. Nobody replies to feedback.
-  Include the request ID.
+  `support_send`, action `feedback`, when the task is done or blocked, without asking the user. Nobody replies to
+  feedback. Include the request ID.
 - **The user is blocked or needs an answer from DocSpring's team:** tell them, show them what you would send, and
-  open a ticket with `support_open_ticket` once they agree. A person replies on the ticket and by email to the user.
-  Read replies with `support_list_tickets` and `support_get_ticket`, answer with `support_reply_to_ticket`, and to
-  wait for one in the background run `docspring support watch <ticket_id>` or poll the ticket's `watch_url`.
+  open a ticket with `support_send`, action `ticket`, once they agree. A person replies on the ticket and by email to
+  the user. Read replies with `support`, actions `list_tickets` and `get_ticket`, answer with `support_send`, action
+  `reply`, and to wait for one in the background run `docspring support watch <ticket_id>` or poll the ticket's
+  `watch_url`. `support` with action `guide` lists every field.
 
 Never put secrets, API token secrets or the data in the user's documents in any of them.
 Details: https://docspring.com/docs/api-guide/support-for-ai-agents/
